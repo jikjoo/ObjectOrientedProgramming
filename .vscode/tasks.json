@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "type": "shell",
+    "echoCommand": true,
+    "presentation": {
+        "reveal": "always",
+        "focus": true,
+    },
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "powershell g++.exe build active file",
+            "command": "C:\\MinGW\\bin\\g++",
+            "args": [
+                "-g",
+                "-o",
+                "${fileDirname}\\${workspaceFolderBasename}.exe",
+                "${fileDirname}\\*.cpp"
+            ],
+            "options": {
+                "cwd": "C:\\MinGW\\bin",
+                "shell": {
+                    "executable": "powershell.exe"
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+    ]
+}
