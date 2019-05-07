@@ -44,16 +44,22 @@ public:
 private:
 	// declare whatever you want
 	int *mWeight; // weight matrix of next indexes
-	void weightAdd(int idx);
+	void weightAdd(int data);
 	void weightInitialize();
 	void weightShow();
 	int weight;
 	int next_idx; // next index
 	int myshift;
 	int myjump;
-	int *itsjump;
+	bool *itsjump;
 	void itsjumpInitialize();
 	void guessJump(int a, int b);
+	void weightGuessAdd(int data);
+	int findIdxbyData(int data);
+	int jumpLeft(int val, int jump);
+	int jumpRight(int val, int jump);
+	int jumpUp(int val, int jump);
+	int jumpDown(int val, int jump);
 };
 
 /********************************************************
@@ -81,26 +87,9 @@ int Bingo_2014170935_1::myCall(int *itscalls, int *mycalls, int ncalls) {
 		weightAdd(itscalls[ncalls - 1]);
 		weightAdd(mycalls[ncalls - 1]);
 		//predict
-		if (ncalls > 1) {
-			/* int itsjump = abs(itscalls[ncalls - 1] - itscalls[ncalls - 2]);
-			int its_next_idx[4];
-			its_next_idx[0] = itscalls[ncalls - 1] + itsjump;
-			its_next_idx[1] = itscalls[ncalls - 1] - itsjump;
-			its_next_idx[2] = itscalls[ncalls - 2] + itsjump;
-			its_next_idx[3] = itscalls[ncalls - 3] - itsjump;
-			for (int i = 0; i < 4; i++) {
-				if (its_next_idx[i] < 0)
-					its_next_idx[i] += mSize * mSize;
-				else if (its_next_idx[i] > mSize * mSize) {
-					its_next_idx[i] -= mSize * mSize;
-				}
-				for (idx = 0; idx < mSize * mSize; idx++)
-					if (mData[idx] == its_next_idx[i]) {
-						mWeight[idx] -= weight;
-						break;
-					}
-			} */
+		if (ncalls > 2) {
 			guessJump(itscalls[ncalls - 1], itscalls[ncalls - 2]);
+			weightGuessAdd(itscalls[ncalls - 1]);
 		}
 		for (int i = 0; i < mSize; i++) {
 			for (int j = 0; j < mSize; j++) {
@@ -129,9 +118,9 @@ void Bingo_2014170935_1::weightInitialize() {
 
 void Bingo_2014170935_1::itsjumpInitialize() {
 	int jumpsize = 2 * mSize + 1;
-	if (!itsjump) itsjump = new int[jumpsize];
+	if (!itsjump) itsjump = new bool[jumpsize];
 	for (int i = 0; i < jumpsize; i++) {
-		itsjump[i] = 0;
+		itsjump[i] = false;
 	}
 }
 
@@ -170,10 +159,8 @@ void Bingo_2014170935_1::guessJump(int a, int b) {
 		int val_b = b;
 		bool found = false;
 		for (int i = 0; i < mSize; i++) {
-			val_a += jump;
-			val_b += jump;
-			if (val_a > mSize * mSize) val_a = val_a % jump + 1;
-			if (val_b > mSize * mSize) val_b = val_b % jump + 1;
+			val_a = jumpRight(val_a, jump);
+			val_b = jumpRight(val_b, jump);
 			if (val_a == b || val_b == a) {
 				found = true;
 				break;
@@ -183,12 +170,8 @@ void Bingo_2014170935_1::guessJump(int a, int b) {
 		val_a = a;
 		val_b = b;
 		for (int i = 0; i < mSize; i++) {
-			for (int j = 0; j < mSize; j++) {
-				val_a += jump;
-				val_b += jump;
-				if (val_a > mSize * mSize) val_a = val_a % jump + 1;
-				if (val_b > mSize * mSize) val_b = val_b % jump + 1;
-			}
+			val_a = jumpDown(val_a, jump);
+			val_b = jumpDown(val_b, jump);
 			if (val_a == b || val_b == a || found) {
 				found = true;
 				break;
@@ -198,12 +181,10 @@ void Bingo_2014170935_1::guessJump(int a, int b) {
 		val_a = a;
 		val_b = b;
 		for (int i = 0; i < mSize; i++) {
-			for (int j = 0; j < mSize + 1; j++) {
-				val_a += jump;
-				val_b += jump;
-				if (val_a > mSize * mSize) val_a = val_a % jump + 1;
-				if (val_b > mSize * mSize) val_b = val_b % jump + 1;
-			}
+			val_a = jumpDown(val_a, jump);
+			val_a = jumpRight(val_a, jump);
+			val_b = jumpDown(val_b, jump);
+			val_b = jumpRight(val_b, jump);
 			if (val_a == b || val_b == a || found) {
 				found = true;
 				break;
@@ -213,12 +194,10 @@ void Bingo_2014170935_1::guessJump(int a, int b) {
 		val_a = a;
 		val_b = b;
 		for (int i = 0; i < mSize; i++) {
-			for (int j = 0; j < mSize - 1; j++) {
-				val_a += jump;
-				val_b += jump;
-				if (val_a > mSize * mSize) val_a = val_a % jump + 1;
-				if (val_b > mSize * mSize) val_b = val_b % jump + 1;
-			}
+			val_a = jumpLeft(val_a, jump);
+			val_a = jumpDown(val_a, jump);
+			val_b = jumpLeft(val_b, jump);
+			val_b = jumpDown(val_b, jump);
 			if (val_a == b || val_b == a || found) {
 				found = true;
 				break;
@@ -226,54 +205,68 @@ void Bingo_2014170935_1::guessJump(int a, int b) {
 		}
 
 		if (found) {
-			itsjump[jump] += 1;
+			itsjump[jump] = true;
 		}
 	}
 }
 
-/* void Bingo_2014170935_1::weightAdd(int data) {
-	int idx;
-	for (idx = 0; idx < mSize * mSize; idx++)
-		if (mData[idx] == data) break;
-	int row = vec2mat1(idx);
-	int col = vec2mat2(idx);
-	int rowmark = 0;
-	int colmark = 0;
-	int dimark = 0;
-	int rdimark = 0;
-	int rowidx, colidx, dindx, rdindx;
-	for (int i = 0; i < mSize; i++) {
-		//for row
-		mWeight[mat2vec(row, i)] += weight;
-		if (mMark[mat2vec(row, i)])
-			rowmark++;
-		else
-			rowidx = mat2vec(row, i);
-		//for column
-		mWeight[mat2vec(i, col)] += weight;
-		if (mMark[mat2vec(i, col)])
-			colmark++;
-		else
-			colidx = mat2vec(i, col);
-		//for diagonal
-		if (row == col) {
-			mWeight[mat2vec(i, i)] += weight;
-			if (mMark[mat2vec(i, i)])
-				dimark++;
-			else
-				dindx = mat2vec(i, i);
-		}
-
-		if (row == mSize - col - 1) {
-			mWeight[mat2vec(i, mSize - i - 1)] += weight;
-			if (mMark[mat2vec(i, mSize - i - 1)])
-				rdimark++;
-			else
-				rdindx = mat2vec(i, mSize - i - 1);
+void Bingo_2014170935_1::weightGuessAdd(int data) {
+	for (int j = 1; j <= 2 * mSize; j++) {
+		if (!itsjump[j]) {
+			//find neighbor of data, if not itsjump
+			// right
+			int idx;
+			int val;
+			val = jumpRight(data, j);
+			idx = findIdxbyData(val);
+			mWeight[idx] += weight / 2;
+			// left
+			val = jumpLeft(data, j);
+			idx = findIdxbyData(val);
+			mWeight[idx] += weight / 2;
+			// up
+			val = jumpUp(data, j);
+			idx = findIdxbyData(val);
+			mWeight[idx] += weight / 2;
+			// down
+			val = jumpDown(data, j);
+			idx = findIdxbyData(val);
+			mWeight[idx] += weight / 2;
 		}
 	}
-	if (rowmark == mSize - 1) mWeight[rowidx] += weight;
-	if (colmark == mSize - 1) mWeight[colidx] += weight;
-	if (dimark == mSize - 1) mWeight[dindx] += weight;
-	if (rdimark == mSize - 1) mWeight[rdindx] += weight;
-} */
+}
+
+int Bingo_2014170935_1::findIdxbyData(int data) {
+	for (int idx = 0; idx < mSize * mSize; idx++) {
+		if (mData[idx] == data) {
+			return idx;
+		}
+	}
+}
+
+int Bingo_2014170935_1::jumpRight(int val, int jump) {
+	val = val + jump;
+	if (val > mSize * mSize) val = val % jump + 1;
+	return val;
+}
+
+int Bingo_2014170935_1::jumpLeft(int val, int jump) {
+	val = val - jump;
+	if (val <= 0) {
+		val = val - 1;
+		while (val <= mSize * mSize) {
+			val = val + jump;
+		}
+		val = val - jump;
+	}
+}
+int Bingo_2014170935_1::jumpUp(int val, int jump) {
+	for (int i = 0; i < mSize; i++) {
+		val = jumpLeft(val, jump);
+	}
+}
+int Bingo_2014170935_1::jumpDown(int val, int jump) {
+	for (int i = 0; i < mSize; i++) {
+		val = jumpRight(val, jump);
+	}
+}

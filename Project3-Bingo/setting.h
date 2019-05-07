@@ -1,10 +1,10 @@
 #ifndef _SETTING_H_
 #define _SETTING_H_
 
-//#define DEBUG
-//#define DEBUG_WEIGHT
+#define DEBUG
+#define DEBUG_WEIGHT
 #define DEBUG_HIDDEN
-#define DEBUG_LAST
+//#define DEBUG_LAST
 
 #define	MAXPLAYERS	10//100
 #define NUMMATCH	100//100
