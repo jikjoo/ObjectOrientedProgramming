@@ -14,7 +14,6 @@
 // change "2014170935" to your real student id
 #ifndef _Bingo_2014170935_1_H_
 #define _Bingo_2014170935_1_H_
-#include <fstream>
 #include <iomanip>
 
 #include "Bingo.h"
@@ -30,7 +29,6 @@ public:
 		itsdiff = NULL;
 		next_idx = 0;
 		weight = 2;
-		diffs.open("diffs.txt");
 	}
 	// change "2014170935" to your real student id
 	~Bingo_2014170935_1() { /* add whatever */
@@ -39,7 +37,6 @@ public:
 		if (itsdiff) delete[] itsdiff;
 		itsdiff = NULL;
 		next_idx = 0;
-		diffs.close();
 	}
 
 	int myCall(int *itscalls, int *mycalls, int ncalls);
@@ -54,16 +51,11 @@ private:
 	int next_idx; // next index
 	int myshift;
 	int myjump;
-	bool *itsdiff;
+	int *itsdiff;
 	void itsdiffInitialize();
 	void guessDiff(int a, int b);
 	void weightSub(int data);
 	int findIdxbyData(int data);
-	int jumpLeft(int val, int jump);
-	int jumpRight(int val, int jump);
-	int jumpUp(int val, int jump);
-	int jumpDown(int val, int jump);
-	ofstream diffs;
 };
 
 /********************************************************
@@ -85,18 +77,7 @@ int Bingo_2014170935_1::myCall(int *itscalls, int *mycalls, int ncalls) {
 			if (mData[i] == 1) myshift = i;
 		}
 		myjump = abs(mData[myshift + 1] - mData[myshift]);
-		//show();
-		//diffs << endl << "myjump = " <<  myjump << endl;
 	}
-	/* else if(ncalls == BINGO_SIZE * 4 / 3 ){
-		for(int i=1; i<ncalls; i++){
-			diffs << itscalls[i] - itscalls[i-1] << " ";
-		}
-		diffs << endl;
-		for(int i=1; i<ncalls; i++){
-			diffs << mycalls[i] - mycalls[i-1] << " ";
-		}
-	} */
 	else {
 		int idx;
 		int itslastcall = itscalls[ncalls - 1];
@@ -106,15 +87,9 @@ int Bingo_2014170935_1::myCall(int *itscalls, int *mycalls, int ncalls) {
 		// 가정 1. lastcall이랑 그 전 call의 차에는 규칙성이 있다.
 		//guessDiff
 		int jumpsize = mSize * 2;
-		int diff = abs(itslastcall - itscalls[ncalls - 1]);
-		int overlap = false;
+		int diff = abs(itslastcall - itscalls[ncalls - 2]);
 		if (diff <= jumpsize) {
-			for (int i = 0; i < ncalls; i++) {
-				if (itslastcall != ncalls) overlap = true;
-			}
-			if (!overlap) {
 				itsdiff[diff] += 1;
-			}
 		}
 		// let's think the most frequent diff + itslastcall will be its next call
 		int most_diff = 0;
@@ -152,9 +127,9 @@ void Bingo_2014170935_1::weightInitialize() {
 
 void Bingo_2014170935_1::itsdiffInitialize() {
 	int jumpsize = 2 * mSize + 1;
-	if (!itsdiff) itsdiff = new bool[jumpsize];
+	if (!itsdiff) itsdiff = new int[jumpsize];
 	for (int i = 0; i < jumpsize; i++) {
-		itsdiff[i] = false;
+		itsdiff[i] = 0;
 	}
 }
 
@@ -195,34 +170,4 @@ int Bingo_2014170935_1::findIdxbyData(int data) {
 			return idx;
 		}
 	}
-}
-
-int Bingo_2014170935_1::jumpRight(int val, int jump) {
-	val = val + jump;
-	if (val > mSize * mSize) val = val % jump + 1;
-	return val;
-}
-
-int Bingo_2014170935_1::jumpLeft(int val, int jump) {
-	val = val - jump;
-	if (val <= 0) {
-		val = val - 1;
-		while (val <= mSize * mSize) {
-			val = val + jump;
-		}
-		val = val - jump;
-	}
-}
-int Bingo_2014170935_1::jumpUp(int val, int jump) {
-	for (int i = 0; i < mSize; i++) {
-		val = jumpLeft(val, jump);
-	}
-}
-int Bingo_2014170935_1::jumpDown(int val, int jump) {
-	for (int i = 0; i < mSize; i++) {
-		val = jumpRight(val, jump);
-	}
-}
-
-void Bingo_2014170935_1::guessDiff(int last, int last2) {
 }

@@ -28,8 +28,8 @@ int main(int argc, char *argv[]) {
 	int NumPlayers = 0;
 
 	// dummy players
-	//Players[NumPlayers++] = new Bingo_JunheeSeok;
-	//Players[NumPlayers++] = new Bingo_ColinSeok;
+	Players[NumPlayers++] = new Bingo_JunheeSeok;
+	Players[NumPlayers++] = new Bingo_ColinSeok;
 
 	// add your player here by changing "20160000" to your student id
 	//	Players[NumPlayers++] = new Bingo_2014170935;
