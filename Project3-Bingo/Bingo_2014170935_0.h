@@ -75,7 +75,6 @@ int Bingo_2014170935_0::myCall(int *itscalls, int *mycalls, int ncalls) {
 		}
 	}
 #ifdef DEBUG_WEIGHT
-	show();
 	weightShow();
 #endif
 	return mData[next_idx];
@@ -108,9 +107,10 @@ void Bingo_2014170935_0::weightShow() {
 		for (int j = 0; j < mSize; j++) {
 			int idx = mat2vec(i, j);
 			char mark = mMark[idx] ? '*' : ' ';
-			cout << setw(4) << mWeight[idx] << mark << " ";
+			cout << setw(2) << mData[idx] << "(" << mWeight[idx] << ")" << mark << " ";
 		}
 		cout << endl;
 	}
+	cout << endl;
 }
 #endif
