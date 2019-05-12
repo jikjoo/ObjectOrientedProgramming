@@ -24,7 +24,10 @@
                     "ignoreFailures": false
                 }
             ],
-            "preLaunchTask": "powershell g++.exe build active file"
+            "preLaunchTask": "powershell g++.exe build active file",
+            "logging": {
+                "moduleLoad": false,
+            }
         }
     ]
 }

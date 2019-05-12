@@ -14,8 +14,8 @@
 // change "2014170935" to your real student id
 #ifndef _Bingo_2014170935_1_H_
 #define _Bingo_2014170935_1_H_
-#include <iomanip>
 #include <fstream>
+#include <iomanip>
 
 #include "Bingo.h"
 #include "setting.h"
@@ -27,7 +27,7 @@ public:
 	Bingo_2014170935_1() {
 		mName = "Jikjoo_1"; // change "MyName" to your real name in English5
 		mWeight = NULL;
-		itsjump = NULL;
+		itsdiff = NULL;
 		next_idx = 0;
 		weight = 2;
 		diffs.open("diffs.txt");
@@ -36,8 +36,8 @@ public:
 	~Bingo_2014170935_1() { /* add whatever */
 		if (mWeight) delete[] mWeight;
 		mWeight = NULL;
-		if (itsjump) delete[] itsjump;
-		itsjump = NULL;
+		if (itsdiff) delete[] itsdiff;
+		itsdiff = NULL;
 		next_idx = 0;
 		diffs.close();
 	}
@@ -54,10 +54,10 @@ private:
 	int next_idx; // next index
 	int myshift;
 	int myjump;
-	bool *itsjump;
-	void itsjumpInitialize();
-	void guessJump(int a, int b);
-	void weightGuessAdd(int data);
+	bool *itsdiff;
+	void itsdiffInitialize();
+	void guessDiff(int a, int b);
+	void weightSub(int data);
 	int findIdxbyData(int data);
 	int jumpLeft(int val, int jump);
 	int jumpRight(int val, int jump);
@@ -79,16 +79,16 @@ int Bingo_2014170935_1::myCall(int *itscalls, int *mycalls, int ncalls) {
 	if (ncalls == 0) {
 		//initial return
 		weightInitialize();
-		itsjumpInitialize();
+		itsdiffInitialize();
 		next_idx = mat2vec(mid, mid);
 		for (int i = 0; i < mSize * mSize; i++) {
 			if (mData[i] == 1) myshift = i;
 		}
 		myjump = abs(mData[myshift + 1] - mData[myshift]);
 		//show();
-		diffs << endl << "myjump = " <<  myjump << endl;
-	} 
-	else if(ncalls == BINGO_SIZE * 4 / 3 ){
+		//diffs << endl << "myjump = " <<  myjump << endl;
+	}
+	/* else if(ncalls == BINGO_SIZE * 4 / 3 ){
 		for(int i=1; i<ncalls; i++){
 			diffs << itscalls[i] - itscalls[i-1] << " ";
 		}
@@ -96,17 +96,36 @@ int Bingo_2014170935_1::myCall(int *itscalls, int *mycalls, int ncalls) {
 		for(int i=1; i<ncalls; i++){
 			diffs << mycalls[i] - mycalls[i-1] << " ";
 		}
-	}
+	} */
 	else {
 		int idx;
 		int itslastcall = itscalls[ncalls - 1];
 		weightAdd(itslastcall);
 		weightAdd(mycalls[ncalls - 1]);
 		//predict
-		// 가정 1. 첫 표시는 가운데거나 모서리
-		// 가정 2. 두번째 표시는 첫 표시와 빙고되는 선으로 연결됨
-		// 가정 3. 합차에 패턴이 존재한다.
-			
+		// 가정 1. lastcall이랑 그 전 call의 차에는 규칙성이 있다.
+		//guessDiff
+		int jumpsize = mSize * 2;
+		int diff = abs(itslastcall - itscalls[ncalls - 1]);
+		int overlap = false;
+		if (diff <= jumpsize) {
+			for (int i = 0; i < ncalls; i++) {
+				if (itslastcall != ncalls) overlap = true;
+			}
+			if (!overlap) {
+				itsdiff[diff] += 1;
+			}
+		}
+		// let's think the most frequent diff + itslastcall will be its next call
+		int most_diff = 0;
+		for (int i = 1; i <= jumpsize; i++) {
+			if (itsdiff[most_diff] < itsdiff[i])
+				most_diff = i;
+		}
+		if(itslastcall + most_diff <= mSize * mSize)
+			weightSub(itslastcall + most_diff);
+		if(itslastcall - most_diff > 0)
+			weightSub(itslastcall - most_diff);	
 		for (int i = 0; i < mSize; i++) {
 			for (int j = 0; j < mSize; j++) {
 				idx = mat2vec(i, j);
@@ -131,11 +150,11 @@ void Bingo_2014170935_1::weightInitialize() {
 	}
 }
 
-void Bingo_2014170935_1::itsjumpInitialize() {
+void Bingo_2014170935_1::itsdiffInitialize() {
 	int jumpsize = 2 * mSize + 1;
-	if (!itsjump) itsjump = new bool[jumpsize];
+	if (!itsdiff) itsdiff = new bool[jumpsize];
 	for (int i = 0; i < jumpsize; i++) {
-		itsjump[i] = false;
+		itsdiff[i] = false;
 	}
 }
 
@@ -165,30 +184,9 @@ void Bingo_2014170935_1::weightShow() {
 }
 #endif
 
-void Bingo_2014170935_1::weightGuessAdd(int data) {
-	for (int j = 1; j <= 2 * mSize; j++) {
-		if (!itsjump[j]) {
-			//find neighbor of data, if not itsjump
-			// right
-			int idx;
-			int val;
-			val = jumpRight(data, j);
-			idx = findIdxbyData(val);
-			mWeight[idx] += weight / 2;
-			// left
-			val = jumpLeft(data, j);
-			idx = findIdxbyData(val);
-			mWeight[idx] += weight / 2;
-			// up
-			val = jumpUp(data, j);
-			idx = findIdxbyData(val);
-			mWeight[idx] += weight / 2;
-			// down
-			val = jumpDown(data, j);
-			idx = findIdxbyData(val);
-			mWeight[idx] += weight / 2;
-		}
-	}
+void Bingo_2014170935_1::weightSub(int data) {
+	int idx = findIdxbyData(data);
+	mWeight[idx] -= 1;
 }
 
 int Bingo_2014170935_1::findIdxbyData(int data) {
@@ -226,14 +224,5 @@ int Bingo_2014170935_1::jumpDown(int val, int jump) {
 	}
 }
 
-void Bingo_2014170935_1::guessJump(int a, int b) {
-
-	for (int j = 1; j <= 2 * mSize; j++) {
-		// 첫 표시가 가운데
-		int val = a;
-		// row
-		for (int i = 0; i < mSize / 2; i++) {
-			val = jumpRight(val, j);
-		}
-	}
+void Bingo_2014170935_1::guessDiff(int last, int last2) {
 }
