@@ -8,7 +8,7 @@
 
 #define MAXPLAYERS 10 //100
 #define NUMMATCH 100  //100
-#define BINGO_SIZE 5  //20
+#define BINGO_SIZE 20  //20
 #define BINGO_CNT 5
 
 #endif

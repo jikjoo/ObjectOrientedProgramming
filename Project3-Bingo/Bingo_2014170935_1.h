@@ -93,8 +93,9 @@ int Bingo_2014170935_1::myCall(int *itscalls, int *mycalls, int ncalls) {
 		}
 		// let's think the most frequent diff + itslastcall will be its next call
 		int most_diff = 0;
+		int wall = ncalls / mSize * 2; // 규칙성이 있는 diff를 찾기 위한 벽
 		for (int i = 1; i <= jumpsize; i++) {
-			if (itsdiff[most_diff] < itsdiff[i])
+			if (itsdiff[most_diff] + wall < itsdiff[i])
 				most_diff = i;
 		}
 		if(itslastcall + most_diff <= mSize * mSize)

@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 	// add your player here by changing "20160000" to your student id
 	//	Players[NumPlayers++] = new Bingo_2014170935;
 	Players[NumPlayers++] = new Bingo_2014170935_0;
-	Players[NumPlayers++] = new Bingo_2014170935_1;
+	//Players[NumPlayers++] = new Bingo_2014170935_1;
 	//Players[NumPlayers++] = new Bingo_2014170935_2;
 
 	// initialize score
