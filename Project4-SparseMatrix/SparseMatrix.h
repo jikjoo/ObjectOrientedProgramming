@@ -1,8 +1,10 @@
 #ifndef _SPARSE_MATRIX_H_
 #define _SPARSE_MATRIX_H_
 
-#include <vector>
 #include <map>
+#include <vector>
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -10,8 +12,8 @@ class SparseMatrix {
 public:
 	// nr x nc sparse matrix is constructed. If they are not given, 1x1 matrix by default
 	SparseMatrix(int nr = 1, int nc = 1) {
-		nRow = nr;
-		nCol = nc;
+		this->nRow = nr;
+		this->nCol = nc;
 	}
 	~SparseMatrix() {
 		vals.clear();
@@ -23,9 +25,9 @@ public:
 	// if increased, the added parts are filled with zeros
 	void resize(int nr, int nc);
 
-	int getNumRows() { return nRow; }; // return number of rows
-	int getNumCols() { return nCol; }; // return number of columns
-	int getNumOfNonZeros();			   // return number of non-zero elements
+	int getNumRows() { return nRow; };				// return number of rows
+	int getNumCols() { return nCol; };				// return number of columns
+	int getNumOfNonZeros() { return vals.size(); }; // return number of non-zero elements
 
 	// file access
 	// read a sparse matrix from a text file
@@ -55,14 +57,6 @@ private:
 	vector<int> rows, cols;
 	int nRow, nCol;
 	//map<int , double> vals;
-	
 };
 
-void SparseMatrix::setValue(int row, int col, double val) {
-	int idx = row * nCol + col;
-	//vals.insert(pair<int, double>(idx, val));
-}
-double SparseMatrix::getValue(int row, int col){
-	vector<int>::iterator iter;
-}
 #endif
