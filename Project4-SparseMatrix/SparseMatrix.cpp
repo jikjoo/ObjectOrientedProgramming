@@ -1,9 +1,56 @@
 #include "SparseMatrix.h"
 
+void SparseMatrix::sort_row(int left, int right){
+	if(left >= right) return;
+	double pivot = rows[right];
+	int cnt = left;
+	for(int i= left; i <= right; i++){
+		if(rows[i] <= pivot){
+			swap(rows[cnt], rows[i]);
+			swap(cols[cnt], cols[i]);
+			swap(vals[cnt], vals[i]);
+			cnt++;
+		}
+	}
+	sort_row(left,cnt-2);
+	sort_row(cnt, right);
+}
+
+
+void SparseMatrix::sort_col(int left, int right){
+	if(left >= right) return;
+	double pivot = cols[right];
+	int cnt = left;
+	for(int i= left; i <= right; i++){
+		if(cols[i] <= pivot){
+			swap(cols[cnt], cols[i]);
+			swap(vals[cnt], vals[i]);
+			cnt++;
+		}
+	}
+	sort_col(left,cnt-2);
+	sort_col(cnt, right);
+}
+
+void SparseMatrix::sort(){
+	int size = vals.size() - 1;
+	sort_row(0, size);
+	sort_col(0, size);
+}
 void SparseMatrix::setValue(int row, int col, double val) {
 	vals.push_back(val);
     rows.push_back(row);
     cols.push_back(col);
+	print();
+	sort();
+	print();
+}
+
+void SparseMatrix::print(){
+	for(int i=0;i<vals.size(); i++){
+		cout << "(" << rows[i] << " " << cols[i] << " " << vals[i] << ")";
+	}
+	cout << endl;
 }
 
 double SparseMatrix::getValue(int row, int col) {
@@ -24,6 +71,7 @@ void SparseMatrix::resize(int nr, int nc) {
 	}
 	nCol = nc;
 	nRow = nr;
+	sort();
 }
 
 bool SparseMatrix::readFromFile(string filename) {
@@ -31,7 +79,7 @@ bool SparseMatrix::readFromFile(string filename) {
 }
 
 SparseMatrix SparseMatrix::operator+(SparseMatrix &M) {
-	SparseMatrix tmp = this;
+	SparseMatrix tmp;
 	for (int pos = 0; pos < vals.size(); pos++) {
         double new_val =vals[pos] + M.vals[pos];
         if(new_val == 0) continue;

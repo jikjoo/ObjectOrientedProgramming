@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -29,6 +30,9 @@ public:
 	int getNumCols() { return nCol; };				// return number of columns
 	int getNumOfNonZeros() { return vals.size(); }; // return number of non-zero elements
 
+	void sort_row(int left, int right); // quicksort by row first, column
+	void sort_col(int left, int right);
+	void sort();
 	// file access
 	// read a sparse matrix from a text file
 	// the file format is "row col val"
@@ -50,11 +54,13 @@ public:
 	double colSum(int col);			   // calculate the sum of elements in a "col"-th column
 	double sum();					   // calculate the sum of all elements
 	bool isAllAbsLessThan(double val); // true if the absolute value of all elements are less than val
-
+	//print
+	void print();
 private:
 	// declare whatever you want
 	vector<double> vals;
-	vector<int> rows, cols;
+	vector<int> rows; // row of val -> number of element in row
+	vector<int> cols; // col of val
 	int nRow, nCol;
 	//map<int , double> vals;
 };

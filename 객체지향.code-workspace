@@ -29,7 +29,9 @@
 			"system_error": "cpp",
 			"type_traits": "cpp",
 			"typeinfo": "cpp",
-			"iomanip": "cpp"
+			"iomanip": "cpp",
+			"vector": "cpp",
+			"fstream": "cpp"
 		}
 	}
 }
