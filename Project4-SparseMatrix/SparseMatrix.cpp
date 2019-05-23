@@ -9,6 +9,9 @@ void SparseMatrix::sort_row(int left, int right){
 			swap(rows[cnt], rows[i]);
 			swap(cols[cnt], cols[i]);
 			swap(vals[cnt], vals[i]);
+			if(rows[i]==pivot){
+				sort_col(cnt,i);
+			}
 			cnt++;
 		}
 	}
@@ -35,13 +38,11 @@ void SparseMatrix::sort_col(int left, int right){
 void SparseMatrix::sort(){
 	int size = vals.size() - 1;
 	sort_row(0, size);
-	sort_col(0, size);
 }
 void SparseMatrix::setValue(int row, int col, double val) {
 	vals.push_back(val);
     rows.push_back(row);
     cols.push_back(col);
-	print();
 	sort();
 	print();
 }
