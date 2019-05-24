@@ -44,20 +44,24 @@ void SparseMatrix::sort() {
 	}
 }
 void SparseMatrix::setValue(int row, int col, double val) {
+	for(int i=0; i< vals.size(); i++){
+		if(rows[i] == row && cols[i] == col){
+			vals.erase(vals.begin() + i);
+			cols.erase(cols.begin() + i);
+			rows.erase(rows.begin() + i);
+		}
+	}
 	vals.push_back(val);
 	rows.push_back(row);
 	cols.push_back(col);
 	//cout<< "set " ; print();
 	sort();
-	cout << "sort ";
-	IA[row] += 1;
-	print();
 }
 
 void SparseMatrix::print() {
 	cout << "row:[";
 	for (int i = 0; i < vals.size(); i++) {
-		cout  << rows[i] << " " ;
+		cout << rows[i] << " ";
 	}
 	cout << "] col:[";
 	for (int i = 0; i < vals.size(); i++) {
@@ -67,10 +71,7 @@ void SparseMatrix::print() {
 	for (int i = 0; i < vals.size(); i++) {
 		cout << vals[i] << " ";
 	}
-	cout <<  "] IA:[";
-	for (int i = 0; i < IA.size(); i++) {
-		cout <<  IA[i] << " " ;
-	}
+
 	cout << "]" << endl;
 }
 
@@ -92,7 +93,6 @@ void SparseMatrix::resize(int nr, int nc) {
 	}
 	nCol = nc;
 	nRow = nr;
-	IA.resize(nr+1, 0);
 	sort();
 }
 
@@ -101,18 +101,38 @@ bool SparseMatrix::readFromFile(string filename) {
 }
 
 SparseMatrix SparseMatrix::operator+(SparseMatrix &M) {
-	SparseMatrix tmp;
-	int a=0,b=0;
-	for (int pos = 0; pos < vals.size() + M.vals.size(); pos++) {
+	print();
+	M.print();
+	SparseMatrix tmp(nRow, nCol);
+	int a = 0; int b = 0;
+	while(a < rows.size() && b < M.rows.size()) {
 		int row_a = rows[a];
 		int row_b = M.rows[b];
+		int col_a = cols[a];
+		int col_b = M.cols[b];
 		if (row_a == row_b) {
-
+			if (col_a == col_b) {
+				int new_val = vals[a] + M.vals[b];
+				if (new_val != 0)
+					tmp.setValue(row_a, col_a, vals[a] + M.vals[b]);
+				a += 1;
+				b += 1;
+			} else if (col_a < col_b) {
+				tmp.setValue(row_a, col_a, vals[a]);
+				a += 1;
+			} else {
+				tmp.setValue(row_b, col_b, M.vals[b]);
+				b += 1;
+			}
 		} else if (row_a < row_b) {
-
+			tmp.setValue(row_a, col_a, vals[a]);
+			a += 1;
 		} else {
+			tmp.setValue(row_b, col_b, M.vals[b]);
+			b += 1;
 		}
 	}
+	tmp.print();
 	return tmp;
 }
 

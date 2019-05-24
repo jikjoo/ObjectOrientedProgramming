@@ -15,13 +15,11 @@ public:
 	SparseMatrix(int nr = 1, int nc = 1) {
 		this->nRow = nr;
 		this->nCol = nc;
-		IA = vector<int>(nr+1, 0);
 	}
 	~SparseMatrix() {
 		vals.clear();
 		rows.clear();
 		cols.clear();
-		IA.clear();
 	}
 
 	// resize the matrix to nr x nc.
@@ -64,9 +62,7 @@ private:
 	vector<double> vals;
 	vector<int> rows; // row of val
 	vector<int> cols; // col of val
-	vector<int> IA;		  // number of element in row
 	int nRow, nCol;
-	//map<int , double> vals;
 };
 
 #endif
