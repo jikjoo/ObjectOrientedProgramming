@@ -1,11 +1,11 @@
 #ifndef _SPARSE_MATRIX_H_
 #define _SPARSE_MATRIX_H_
 
+#include <algorithm>
+#include <fstream>
+#include <iostream>
 #include <map>
 #include <vector>
-#include <iostream>
-#include <fstream>
-#include <algorithm>
 
 using namespace std;
 
@@ -15,11 +15,13 @@ public:
 	SparseMatrix(int nr = 1, int nc = 1) {
 		this->nRow = nr;
 		this->nCol = nc;
+		IA = vector<int>(nr+1, 0);
 	}
 	~SparseMatrix() {
 		vals.clear();
 		rows.clear();
 		cols.clear();
+		IA.clear();
 	}
 
 	// resize the matrix to nr x nc.
@@ -56,11 +58,13 @@ public:
 	bool isAllAbsLessThan(double val); // true if the absolute value of all elements are less than val
 	//print
 	void print();
+
 private:
 	// declare whatever you want
 	vector<double> vals;
-	vector<int> rows; // row of val -> number of element in row
+	vector<int> rows; // row of val
 	vector<int> cols; // col of val
+	vector<int> IA;		  // number of element in row
 	int nRow, nCol;
 	//map<int , double> vals;
 };
