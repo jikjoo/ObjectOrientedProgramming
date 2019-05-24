@@ -44,8 +44,8 @@ void SparseMatrix::sort() {
 	}
 }
 void SparseMatrix::setValue(int row, int col, double val) {
-	for(int i=0; i< vals.size(); i++){
-		if(rows[i] == row && cols[i] == col){
+	for (int i = 0; i < vals.size(); i++) {
+		if (rows[i] == row && cols[i] == col) {
 			vals.erase(vals.begin() + i);
 			cols.erase(cols.begin() + i);
 			rows.erase(rows.begin() + i);
@@ -59,6 +59,7 @@ void SparseMatrix::setValue(int row, int col, double val) {
 }
 
 void SparseMatrix::print() {
+#ifdef DEBUG
 	cout << "row:[";
 	for (int i = 0; i < vals.size(); i++) {
 		cout << rows[i] << " ";
@@ -73,6 +74,7 @@ void SparseMatrix::print() {
 	}
 
 	cout << "]" << endl;
+#endif
 }
 
 double SparseMatrix::getValue(int row, int col) {
@@ -97,15 +99,33 @@ void SparseMatrix::resize(int nr, int nc) {
 }
 
 bool SparseMatrix::readFromFile(string filename) {
-	return false;
+	ifstream infile(filename);
+	if (!infile.is_open()) {
+		cout << "can not open";
+		return false;
+	}
+	int row;
+	int col;
+	double val;
+	string line;
+	while (infile >> row >> col >> val) {
+		if (nRow < row) resize(row, nCol);
+		if (nCol < col) resize(nRow, col);
+		rows.push_back(row);
+		cols.push_back(col);
+		vals.push_back(val);
+	}
+	sort();
+	return true;
 }
 
 SparseMatrix SparseMatrix::operator+(SparseMatrix &M) {
 	print();
 	M.print();
 	SparseMatrix tmp(nRow, nCol);
-	int a = 0; int b = 0;
-	while(a < rows.size() && b < M.rows.size()) {
+	int a = 0;
+	int b = 0;
+	while (a < rows.size() && b < M.rows.size()) {
 		int row_a = rows[a];
 		int row_b = M.rows[b];
 		int col_a = cols[a];
@@ -137,11 +157,45 @@ SparseMatrix SparseMatrix::operator+(SparseMatrix &M) {
 }
 
 SparseMatrix SparseMatrix::operator-(SparseMatrix &M) {
-	SparseMatrix tmp;
+	print();
+	M.print();
+	SparseMatrix tmp(nRow, nCol);
+	int a = 0;
+	int b = 0;
+	while (a < rows.size() && b < M.rows.size()) {
+		int row_a = rows[a];
+		int row_b = M.rows[b];
+		int col_a = cols[a];
+		int col_b = M.cols[b];
+		if (row_a == row_b) {
+			if (col_a == col_b) {
+				int new_val = vals[a] - M.vals[b];
+				if (new_val != 0)
+					tmp.setValue(row_a, col_a, vals[a] + M.vals[b]);
+				a += 1;
+				b += 1;
+			} else if (col_a < col_b) {
+				tmp.setValue(row_a, col_a, vals[a]);
+				a += 1;
+			} else {
+				tmp.setValue(row_b, col_b, M.vals[b]);
+				b += 1;
+			}
+		} else if (row_a < row_b) {
+			tmp.setValue(row_a, col_a, vals[a]);
+			a += 1;
+		} else {
+			tmp.setValue(row_b, col_b, M.vals[b]);
+			b += 1;
+		}
+	}
+	tmp.print();
 	return tmp;
 }
 
 SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
+	print();
+	M.print();
 	SparseMatrix tmp;
 	return tmp;
 }

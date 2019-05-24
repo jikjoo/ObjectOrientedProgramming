@@ -1,11 +1,13 @@
 #ifndef _SPARSE_MATRIX_H_
 #define _SPARSE_MATRIX_H_
+#define DEBUG
 
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <vector>
+#include <string>
 
 using namespace std;
 
