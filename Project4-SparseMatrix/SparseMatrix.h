@@ -70,7 +70,6 @@ private:
 	vector<int> *rows;
 	vector<int> *cols;
 	int nRow, nCol;
-	void setVal(int row, int col, double val); // setValues without sort
 };
 
 #endif
