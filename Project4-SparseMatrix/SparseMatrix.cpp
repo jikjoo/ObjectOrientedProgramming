@@ -43,17 +43,22 @@ void SparseMatrix::sort() {
 		}
 	}
 }
+void SparseMatrix::setVal(int row, int col, double val) {
+	if (val != 0) {
+		vals.push_back(val);
+		rows.push_back(row);
+		cols.push_back(col);
+	}
+}
 void SparseMatrix::setValue(int row, int col, double val) {
-	for (int i = 0; i < vals.size(); i++) {
+	for (int i = 0; i < vals.size(); i++) { //check duplicate of position
 		if (rows[i] == row && cols[i] == col) {
 			vals.erase(vals.begin() + i);
 			cols.erase(cols.begin() + i);
 			rows.erase(rows.begin() + i);
 		}
 	}
-	vals.push_back(val);
-	rows.push_back(row);
-	cols.push_back(col);
+	setVal(row, col, val);
 	//cout<< "set " ; print();
 	sort();
 }
@@ -107,7 +112,6 @@ bool SparseMatrix::readFromFile(string filename) {
 	int row;
 	int col;
 	double val;
-	string line;
 	while (infile >> row >> col >> val) {
 		if (nRow < row) resize(row, nCol);
 		if (nCol < col) resize(nRow, col);
@@ -115,7 +119,7 @@ bool SparseMatrix::readFromFile(string filename) {
 		cols.push_back(col);
 		vals.push_back(val);
 	}
-	sort();
+	//sort();
 	return true;
 }
 
@@ -133,22 +137,21 @@ SparseMatrix SparseMatrix::operator+(SparseMatrix &M) {
 		if (row_a == row_b) {
 			if (col_a == col_b) {
 				int new_val = vals[a] + M.vals[b];
-				if (new_val != 0)
-					tmp.setValue(row_a, col_a, vals[a] + M.vals[b]);
+				tmp.setVal(row_a, col_a, vals[a] + M.vals[b]);
 				a += 1;
 				b += 1;
 			} else if (col_a < col_b) {
-				tmp.setValue(row_a, col_a, vals[a]);
+				tmp.setVal(row_a, col_a, vals[a]);
 				a += 1;
 			} else {
-				tmp.setValue(row_b, col_b, M.vals[b]);
+				tmp.setVal(row_b, col_b, M.vals[b]);
 				b += 1;
 			}
 		} else if (row_a < row_b) {
-			tmp.setValue(row_a, col_a, vals[a]);
+			tmp.setVal(row_a, col_a, vals[a]);
 			a += 1;
 		} else {
-			tmp.setValue(row_b, col_b, M.vals[b]);
+			tmp.setVal(row_b, col_b, M.vals[b]);
 			b += 1;
 		}
 	}

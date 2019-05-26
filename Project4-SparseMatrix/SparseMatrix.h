@@ -65,6 +65,7 @@ private:
 	vector<int> rows; // row of val
 	vector<int> cols; // col of val
 	int nRow, nCol;
+	void setVal(int row, int col, double val); // setValues without sort
 };
 
 #endif
