@@ -1,41 +1,28 @@
 #include "SparseMatrix.h"
 
-void SparseMatrix::sort_row(int left, int right) {
+void SparseMatrix::sort_row_col(int left, int right) {
 	if (left >= right) return;
-	double pivot = (*rows)[right];
+	double pivot_r = rows[right];
+	double pivot_c = cols[right];
 	int cnt = left;
 	for (int i = left; i <= right; i++) {
-		if ((*rows)[i] <= pivot) {
-			swap(rows[cnt], rows[i]);
-			swap(cols[cnt], cols[i]);
-			swap(vals[cnt], vals[i]);
+		if (rows[i] < pivot_r ||
+			(rows[i] == pivot_r && cols[i] <= pivot_c)) {
+			iter_swap(rows.begin() + cnt, rows.begin() + i);
+			iter_swap(cols.begin() + cnt, cols.begin() + i);
+			iter_swap(vals.begin() + cnt, vals.begin() + i);
 			cnt++;
 		}
 	}
-	sort_row(left, cnt - 2);
-	sort_row(cnt, right);
-}
-
-void SparseMatrix::sort_col(int left, int right) {
-	if (left >= right) return;
-	double pivot = (*cols)[right];
-	int cnt = left;
-	for (int i = left; i <= right; i++) {
-		if ((*cols)[i] <= pivot) {
-			swap((*cols)[cnt], (*cols)[i]);
-			swap((*vals)[cnt], (*vals)[i]);
-			cnt++;
-		}
-	}
-	sort_col(left, cnt - 2);
-	sort_col(cnt, right);
+	sort_row_col(left, cnt - 2);
+	sort_row_col(cnt, right);
 }
 
 void SparseMatrix::sort() {
-	int size = vals->size() - 1;
-	sort_row(0, size);
-	print();
+	int size = vals.size() - 1;
+	sort_row_col(0, size);
 }
+
 void SparseMatrix::setValue(int row, int col, double val) {
 	for (int i = 0; i < vals.size(); i++) {
 		if (rows[i] == row && cols[i] == col) {
@@ -47,24 +34,22 @@ void SparseMatrix::setValue(int row, int col, double val) {
 	vals.push_back(val);
 	rows.push_back(row);
 	cols.push_back(col);
-	//cout<< "set " ; print();
 	sort();
-	print();
 }
 
 void SparseMatrix::print() {
 #ifdef DEBUG
 	cout << "row:[";
-	for (int i = 0; i < vals->size(); i++) {
-		cout << (*rows)[i] << " ";
+	for (int i = 0; i < vals.size(); i++) {
+		cout << rows[i] << " ";
 	}
 	cout << "] col:[";
-	for (int i = 0; i < vals->size(); i++) {
-		cout << (*cols)[i] << " ";
+	for (int i = 0; i < vals.size(); i++) {
+		cout << cols[i] << " ";
 	}
 	cout << "] val:[";
-	for (int i = 0; i < vals->size(); i++) {
-		cout << (*vals)[i] << " ";
+	for (int i = 0; i < vals.size(); i++) {
+		cout << vals[i] << " ";
 	}
 
 	cout << "]" << endl;
@@ -72,19 +57,19 @@ void SparseMatrix::print() {
 }
 
 double SparseMatrix::getValue(int row, int col) {
-	for (int pos = 0; pos < vals->size(); pos++) {
-		if ((*rows)[pos] == row && (*cols)[pos] == col)
-			return (*vals)[pos];
+	for (int pos = 0; pos < vals.size(); pos++) {
+		if (rows[pos] == row && cols[pos] == col)
+			return vals[pos];
 	}
 	return 0;
 }
 
 void SparseMatrix::resize(int nr, int nc) {
-	for (int pos = 0; pos < vals->size(); pos++) {
-		if ((*rows)[pos] > nr || (*cols)[pos] > nc) {
-			rows->erase(rows->begin() + pos);
-			cols->erase(cols->begin() + pos);
-			vals->erase(vals->begin() + pos);
+	for (int pos = 0; pos < vals.size(); pos++) {
+		if (rows[pos] > nr || cols[pos] > nc) {
+			rows.erase(rows.begin() + pos);
+			cols.erase(cols.begin() + pos);
+			vals.erase(vals.begin() + pos);
 		}
 	}
 	nCol = nc;
@@ -105,9 +90,9 @@ bool SparseMatrix::readFromFile(string filename) {
 	while (infile >> row >> col >> val) {
 		if (nRow < row) resize(row, nCol);
 		if (nCol < col) resize(nRow, col);
-		rows->push_back(row);
-		cols->push_back(col);
-		vals->push_back(val);
+		rows.push_back(row);
+		cols.push_back(col);
+		vals.push_back(val);
 	}
 	sort();
 	return true;
@@ -119,11 +104,11 @@ SparseMatrix SparseMatrix::operator+(SparseMatrix &M) {
 	SparseMatrix tmp(nRow, nCol);
 	int a = 0;
 	int b = 0;
-	while (a < rows->size() && b < M.rows->size()) {
-		int row_a = (*rows)[a];
-		int row_b = (*M.rows)[b];
-		int col_a = (*cols)[a];
-		int col_b = (*M.cols)[b];
+	while (a < rows.size() && b < M.rows.size()) {
+		int row_a = rows[a];
+		int row_b = (M.rows)[b];
+		int col_a = cols[a];
+		int col_b = (M.cols)[b];
 		if (row_a == row_b) {
 			if (col_a == col_b) {
 				int new_val = vals[a] + M.vals[b];
@@ -156,30 +141,30 @@ SparseMatrix SparseMatrix::operator-(SparseMatrix &M) {
 	SparseMatrix tmp(nRow, nCol);
 	int a = 0;
 	int b = 0;
-	while (a < rows->size() && b < M.rows->size()) {
-		int row_a = (*rows)[a];
-		int row_b = (*M.rows)[b];
-		int col_a = (*cols)[a];
-		int col_b = (*M.cols)[b];
+	while (a < rows.size() && b < M.rows.size()) {
+		int row_a = rows[a];
+		int row_b = (M.rows)[b];
+		int col_a = cols[a];
+		int col_b = (M.cols)[b];
 		if (row_a == row_b) {
 			if (col_a == col_b) {
-				int new_val = (*vals)[a] - (*M.vals)[b];
+				int new_val = vals[a] - (M.vals)[b];
 				if (new_val != 0)
-					tmp.setValue(row_a, col_a, (*vals)[a] + (*M.vals)[b]);
+					tmp.setValue(row_a, col_a, vals[a] + (M.vals)[b]);
 				a += 1;
 				b += 1;
 			} else if (col_a < col_b) {
-				tmp.setValue(row_a, col_a, (*vals)[a]);
+				tmp.setValue(row_a, col_a, vals[a]);
 				a += 1;
 			} else {
-				tmp.setValue(row_b, col_b, (*M.vals)[b]);
+				tmp.setValue(row_b, col_b, (M.vals)[b]);
 				b += 1;
 			}
 		} else if (row_a < row_b) {
-			tmp.setValue(row_a, col_a, (*vals)[a]);
+			tmp.setValue(row_a, col_a, vals[a]);
 			a += 1;
 		} else {
-			tmp.setValue(row_b, col_b, (*M.vals)[b]);
+			tmp.setValue(row_b, col_b, (M.vals)[b]);
 			b += 1;
 		}
 	}
