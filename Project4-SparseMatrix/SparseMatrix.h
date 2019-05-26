@@ -68,14 +68,9 @@ private:
 		/* data */
 	};
 	static bool compRowCol(const rcv &a, const rcv &b) {
-		if (a.row < b.row)
+		if (a.row < b.row || (a.row == b.row && a.col < b.col))
 			return true;
-		else if (a.row == b.row) {
-			if (a.col < b.col)
-				return true;
-			else
-				return false;
-		} else
+		else
 			return false;
 	};
 	vector<rcv> rcvs;

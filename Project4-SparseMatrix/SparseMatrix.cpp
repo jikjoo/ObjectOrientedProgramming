@@ -66,7 +66,6 @@ bool SparseMatrix::readFromFile(string filename) {
 	int row;
 	int col;
 	double val;
-	string line;
 	while (infile >> row >> col >> val) {
 		if (nRow < row) resize(row, nCol);
 		if (nCol < col) resize(nRow, col);
@@ -77,11 +76,11 @@ bool SparseMatrix::readFromFile(string filename) {
 }
 
 SparseMatrix SparseMatrix::operator+(SparseMatrix &M) {
-	return plus_minus(M,true);
+	return plus_minus(M, true);
 }
 
 SparseMatrix SparseMatrix::operator-(SparseMatrix &M) {
-	return plus_minus(M,false);
+	return plus_minus(M, false);
 }
 
 SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
@@ -120,7 +119,34 @@ SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
 }
 
 SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
-	SparseMatrix tmp;
+	SparseMatrix tmp(nRow, M.nCol);
+	int a = 0;
+	int b = 0;
+	double new_val = 0;
+	int size_a = rcvs.size();
+	int size_b = M.rcvs.size();
+	while (a < size_a) {
+		int &row_a = rcvs[a].row;
+		int &col_a = rcvs[a].col;
+		double &val_a = rcvs[a].val;
+		int *col_b;
+		int *row_b;
+		double *val_b;
+
+		for (b = 0; b < size_b; b++) {
+			row_b = &M.rcvs[b].row;
+			val_b = &M.rcvs[b].val;
+			if (col_a == *row_b) {
+				new_val += val_a * *val_b;
+				col_b = &M.rcvs[b].row;
+			}
+		}
+		if (row_a != rcvs[a - 1].row && row_a > 0) {
+			tmp.setVal(row_a, *col_b, new_val);
+			new_val = 0;
+		}
+		a += 1;
+	}
 	return tmp;
 }
 
