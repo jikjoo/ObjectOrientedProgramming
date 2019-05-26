@@ -43,7 +43,10 @@ void test2()
 	A.readFromFile("data2_1.txt");
 	B.readFromFile("data2_2.txt");
 	C.readFromFile("data2_3.txt");
+	A.print();
+	B.print();
 	X = A*B;
+	X.print();
 	if( X.getNumRows()==9 && X.getNumCols()==9 && Agree(X,C) ) cout << "pass" << endl;
 	else cout << "fail" << endl;
 }
@@ -127,8 +130,8 @@ int main(int argc, char* argv[])
 {
 	test1();
 	test2();
-	test3();
-	test4();
+	//test3();
+	//test4();
 			
 	return 0;
 }

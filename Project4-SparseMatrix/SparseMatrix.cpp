@@ -1,41 +1,18 @@
 #include "SparseMatrix.h"
 
-void SparseMatrix::sort_row_col(int left, int right) {
-	if (left >= right) return;
-	double pivot_r = rows[right];
-	double pivot_c = cols[right];
-	int cnt = left;
-	for (int i = left; i <= right; i++) {
-		if (rows[i] < pivot_r ||
-			(rows[i] == pivot_r && cols[i] <= pivot_c)) {
-			iter_swap(rows.begin() + cnt, rows.begin() + i);
-			iter_swap(cols.begin() + cnt, cols.begin() + i);
-			iter_swap(vals.begin() + cnt, vals.begin() + i);
-			cnt++;
-		}
-	}
-	sort_row_col(left, cnt - 2);
-	sort_row_col(cnt, right);
-}
-
 void SparseMatrix::sort() {
-	int size = vals.size() - 1;
-	sort_row_col(0, size);
+	std::sort(rcvs.begin(), rcvs.end(), this->compRowCol);
 }
 
 void SparseMatrix::setVal(int row, int col, double val) {
 	if (val == 0) return;
-	vals.push_back(val);
-	rows.push_back(row);
-	cols.push_back(col);
+	rcvs.push_back({row, col, val});
 }
 
 void SparseMatrix::setValue(int row, int col, double val) {
-	for (int i = 0; i < vals.size(); i++) { // check duplicate
-		if (rows[i] == row && cols[i] == col) {
-			vals.erase(vals.begin() + i);
-			cols.erase(cols.begin() + i);
-			rows.erase(rows.begin() + i);
+	for (int i = 0; i < rcvs.size(); i++) { // check duplicate
+		if (rcvs[i].row == row && rcvs[i].col == col) {
+			rcvs.erase(rcvs.begin() + i);
 		}
 	}
 	setVal(row, col, val);
@@ -45,16 +22,16 @@ void SparseMatrix::setValue(int row, int col, double val) {
 void SparseMatrix::print() {
 #ifdef DEBUG
 	cout << "row:[";
-	for (int i = 0; i < vals.size(); i++) {
-		cout << rows[i] << " ";
+	for (int i = 0; i < rcvs.size(); i++) {
+		cout << rcvs[i].row << " ";
 	}
 	cout << "] col:[";
-	for (int i = 0; i < vals.size(); i++) {
-		cout << cols[i] << " ";
+	for (int i = 0; i < rcvs.size(); i++) {
+		cout << rcvs[i].col << " ";
 	}
 	cout << "] val:[";
-	for (int i = 0; i < vals.size(); i++) {
-		cout << vals[i] << " ";
+	for (int i = 0; i < rcvs.size(); i++) {
+		cout << rcvs[i].val << " ";
 	}
 
 	cout << "]" << endl;
@@ -62,19 +39,17 @@ void SparseMatrix::print() {
 }
 
 double SparseMatrix::getValue(int row, int col) {
-	for (int pos = 0; pos < vals.size(); pos++) {
-		if (rows[pos] == row && cols[pos] == col)
-			return vals[pos];
+	for (int pos = 0; pos < rcvs.size(); pos++) {
+		if (rcvs[pos].row == row && rcvs[pos].col == col)
+			return rcvs[pos].val;
 	}
 	return 0;
 }
 
 void SparseMatrix::resize(int nr, int nc) {
-	for (int pos = 0; pos < vals.size(); pos++) {
-		if (rows[pos] > nr || cols[pos] > nc) {
-			rows.erase(rows.begin() + pos);
-			cols.erase(cols.begin() + pos);
-			vals.erase(vals.begin() + pos);
+	for (int pos = 0; pos < rcvs.size(); pos++) {
+		if (rcvs[pos].row > nr || rcvs[pos].col > nc) {
+			rcvs.erase(rcvs.begin() + pos);
 		}
 	}
 	nCol = nc;
@@ -102,78 +77,49 @@ bool SparseMatrix::readFromFile(string filename) {
 }
 
 SparseMatrix SparseMatrix::operator+(SparseMatrix &M) {
-	print();
-	M.print();
-	SparseMatrix tmp(nRow, nCol);
-	int a = 0;
-	int b = 0;
-	while (a < rows.size() && b < M.rows.size()) {
-		int row_a = rows[a];
-		int row_b = (M.rows)[b];
-		int col_a = cols[a];
-		int col_b = (M.cols)[b];
-		if (row_a == row_b) {
-			if (col_a == col_b) {
-				tmp.setVal(row_a, col_a, vals[a] + M.vals[b]);
-				a += 1;
-				b += 1;
-			} else if (col_a < col_b) {
-				tmp.setVal(row_a, col_a, vals[a]);
-				a += 1;
-			} else {
-				tmp.setVal(row_b, col_b, M.vals[b]);
-				b += 1;
-			}
-		} else if (row_a < row_b) {
-			tmp.setVal(row_a, col_a, vals[a]);
-			a += 1;
-		} else {
-			tmp.setVal(row_b, col_b, M.vals[b]);
-			b += 1;
-		}
-	}
-	tmp.print();
-	return tmp;
+	return plus_minus(M,true);
 }
 
 SparseMatrix SparseMatrix::operator-(SparseMatrix &M) {
-	print();
-	M.print();
+	return plus_minus(M,false);
+}
+
+SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
 	SparseMatrix tmp(nRow, nCol);
 	int a = 0;
 	int b = 0;
-	while (a < rows.size() && b < M.rows.size()) {
-		int row_a = rows[a];
-		int row_b = (M.rows)[b];
-		int col_a = cols[a];
-		int col_b = (M.cols)[b];
+	while (a < rcvs.size() && b < M.rcvs.size()) {
+		int &row_a = rcvs[a].row;
+		int &row_b = M.rcvs[b].row;
+		int &col_a = rcvs[a].col;
+		int &col_b = M.rcvs[b].col;
+		double &val_a = rcvs[a].val;
+		double &val_b = M.rcvs[b].val;
 		if (row_a == row_b) {
 			if (col_a == col_b) {
-				tmp.setVal(row_a, col_a, vals[a] + (M.vals)[b]);
+				double new_val = isPlus ? val_a + val_b : val_a - val_b;
+				tmp.setVal(row_a, col_a, new_val);
 				a += 1;
 				b += 1;
 			} else if (col_a < col_b) {
-				tmp.setVal(row_a, col_a, vals[a]);
+				tmp.setVal(row_a, col_a, val_a);
 				a += 1;
 			} else {
-				tmp.setVal(row_b, col_b, (M.vals)[b]);
+				tmp.setVal(row_b, col_b, val_b);
 				b += 1;
 			}
 		} else if (row_a < row_b) {
-			tmp.setVal(row_a, col_a, vals[a]);
+			tmp.setVal(row_a, col_a, val_a);
 			a += 1;
 		} else {
-			tmp.setVal(row_b, col_b, (M.vals)[b]);
+			tmp.setVal(row_b, col_b, val_b);
 			b += 1;
 		}
 	}
-	tmp.print();
 	return tmp;
 }
 
 SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
-	print();
-	M.print();
 	SparseMatrix tmp;
 	return tmp;
 }

@@ -6,8 +6,8 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -19,9 +19,7 @@ public:
 		this->nCol = nc;
 	}
 	~SparseMatrix() {
-		vals.clear();
-		cols.clear();
-		rows.clear();
+		rcvs.clear();
 	}
 
 	// resize the matrix to nr x nc.
@@ -30,7 +28,7 @@ public:
 
 	int getNumRows() { return nRow; };				// return number of rows
 	int getNumCols() { return nCol; };				// return number of columns
-	int getNumOfNonZeros() { return vals.size(); }; // return number of non-zero elements
+	int getNumOfNonZeros() { return rcvs.size(); }; // return number of non-zero elements
 
 	void sort_row_col(int left, int right); // quicksort by row first, column
 	void sort();
@@ -46,6 +44,7 @@ public:
 	// operations
 	SparseMatrix operator+(SparseMatrix &M); // matrix addition
 	SparseMatrix operator-(SparseMatrix &M); // matrix subtraction
+	SparseMatrix plus_minus(SparseMatrix &M, bool isPlus);
 	SparseMatrix operator*(SparseMatrix &M); // matrix multiplication
 	bool operator==(SparseMatrix &M);		 // true if all elements are equal
 	SparseMatrix operator-();				 // inverting the sign of all elements
@@ -60,11 +59,26 @@ public:
 
 private:
 	// declare whatever you want
-	vector<double> vals;
-	vector<int> rows;
-	vector<int> cols;
 	int nRow, nCol;
-	void setVal(int row, int col, double val); // setValues without sort
+	void setVal(int row, int col, double val); // setValues without sortbool
+	struct rcv {
+		int row;
+		int col;
+		double val;
+		/* data */
+	};
+	static bool compRowCol(const rcv &a, const rcv &b) {
+		if (a.row < b.row)
+			return true;
+		else if (a.row == b.row) {
+			if (a.col < b.col)
+				return true;
+			else
+				return false;
+		} else
+			return false;
+	};
+	vector<rcv> rcvs;
 };
 
 #endif
