@@ -17,11 +17,16 @@ public:
 	SparseMatrix(int nr = 1, int nc = 1) {
 		this->nRow = nr;
 		this->nCol = nc;
+		vals = NULL;
+		cols = NULL;
+		rows = NULL;
 	}
 	~SparseMatrix() {
-		vals.clear();
-		rows.clear();
-		cols.clear();
+		if(vals){
+			delete vals;
+			delete cols;
+			delete rows;
+		}
 	}
 
 	// resize the matrix to nr x nc.
@@ -30,7 +35,7 @@ public:
 
 	int getNumRows() { return nRow; };				// return number of rows
 	int getNumCols() { return nCol; };				// return number of columns
-	int getNumOfNonZeros() { return vals.size(); }; // return number of non-zero elements
+	int getNumOfNonZeros() { return vals->size(); }; // return number of non-zero elements
 
 	void sort_row(int left, int right); // quicksort by row first, column
 	void sort_col(int left, int right);
@@ -61,9 +66,9 @@ public:
 
 private:
 	// declare whatever you want
-	vector<double> vals;
-	vector<int> rows; // row of val
-	vector<int> cols; // col of val
+	vector<double> *vals;
+	vector<int> *rows;
+	vector<int> *cols;
 	int nRow, nCol;
 	void setVal(int row, int col, double val); // setValues without sort
 };

@@ -31,7 +31,8 @@
 			"typeinfo": "cpp",
 			"iomanip": "cpp",
 			"vector": "cpp",
-			"fstream": "cpp"
+			"fstream": "cpp",
+			"deque": "cpp"
 		}
 	}
 }
