@@ -1,4 +1,7 @@
 #include "SparseMatrix.h"
+void SparseMatrix::sort() {
+	std::sort(rcvs.begin(), rcvs.end(), this->compRowCol);
+}
 
 void SparseMatrix::setVal(int row, int col, double val) {
 	if (val == 0) return;
@@ -43,9 +46,11 @@ double SparseMatrix::getValue(int row, int col) {
 }
 
 void SparseMatrix::resize(int nr, int nc) {
-	for (int pos = 0; pos < rcvs.size(); pos++) {
-		if (rcvs[pos].row > nr || rcvs[pos].col > nc) {
-			rcvs.erase(rcvs.begin() + pos);
+	if (nRow > nr || nCol > nc) {
+		for (int pos = 0; pos < rcvs.size(); pos++) {
+			if (rcvs[pos].row > nr || rcvs[pos].col > nc) {
+				rcvs.erase(rcvs.begin() + pos);
+			}
 		}
 	}
 	nCol = nc;
@@ -103,20 +108,27 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	SparseMatrix tmp(nRow, M.nCol);
 	int size_a = rcvs.size();
 	int size_b = M.rcvs.size();
+	vector<int> IA(M.nRow + 1, 0);
+	// IA of M
+	M.sort();
+	int c = 0;
+	for (int i = 0; i < IA.size(); i++) {
+		int &row = M.rcvs[i].row;
+		int &next_row = M.rcvs[i+1].row;
+		if(row != next_row) c++;
+	}
 	for (int a = 0; a < size_a; a++) {
 		int &row_a = rcvs[a].row;
 		int &col_a = rcvs[a].col;
 		double &val_a = rcvs[a].val;
-
-		for (int b = 0; b < size_b; b++) {
+		double new_val = 0;
+		for (int b = IA[col_a]; b < IA[col_a + 1]; b++) {
 			int &row_b = M.rcvs[b].row;
 			int &col_b = M.rcvs[b].col;
 			double &val_b = M.rcvs[b].val;
-			if (col_a == row_b) {
-				double new_val = tmp.getValue(row_a, col_b) + val_a * val_b;
-				tmp.setValue(row_a, col_b, new_val);
-			}
+			new_val += val_a * val_b;
 		}
+		tmp.setVal(row_a, col_b, new_val);
 	}
 	return tmp;
 }

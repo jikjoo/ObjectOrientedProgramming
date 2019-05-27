@@ -1,8 +1,8 @@
 #ifndef _SPARSE_MATRIX_H_
 #define _SPARSE_MATRIX_H_
-//#define DEBUG
+#define DEBUG
 
-//#include <algorithm>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -37,7 +37,7 @@ public:
 	// data access
 	void setValue(int row, int col, double val); // write val at (i,j)
 	double getValue(int row, int col);			 // read value of (i,j)
-
+	void sort();
 	// operations
 	SparseMatrix operator+(SparseMatrix &M); // matrix addition
 	SparseMatrix operator-(SparseMatrix &M); // matrix subtraction
@@ -64,7 +64,12 @@ private:
 		double val;
 		/* data */
 	};
-	vector<rcv>::iterator getRcv(int row, int col);
+	static bool compRowCol(const rcv &a, const rcv &b) {
+		if (a.row < b.row || (a.row == b.row && a.col < b.col))
+			return true;
+		else
+			return false;
+	};
 	vector<rcv> rcvs;
 };
 

@@ -32,7 +32,10 @@
 			"iomanip": "cpp",
 			"vector": "cpp",
 			"fstream": "cpp",
-			"deque": "cpp"
+			"deque": "cpp",
+			"array": "cpp",
+			"list": "cpp",
+			"unordered_map": "cpp"
 		}
 	}
 }
