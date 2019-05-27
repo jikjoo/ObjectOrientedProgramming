@@ -30,8 +30,6 @@ public:
 	int getNumCols() { return nCol; };				// return number of columns
 	int getNumOfNonZeros() { return rcvs.size(); }; // return number of non-zero elements
 
-	void sort_row_col(int left, int right); // quicksort by row first, column
-	void sort();
 	// file access
 	// read a sparse matrix from a text file
 	// the file format is "row col val"
@@ -67,13 +65,7 @@ private:
 		double val;
 		/* data */
 	};
-	static bool compRowCol(const rcv &a, const rcv &b) {
-		if (a.row < b.row || (a.row == b.row && a.col < b.col))
-			return true;
-		else
-			return false;
-	};
-	rcv *getRcv(int row, int col);
+	vector<rcv>::iterator getRcv(int row, int col);
 	vector<rcv> rcvs;
 };
 

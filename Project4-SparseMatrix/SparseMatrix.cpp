@@ -1,9 +1,5 @@
 #include "SparseMatrix.h"
 
-void SparseMatrix::sort() {
-	std::sort(rcvs.begin(), rcvs.end(), this->compRowCol);
-}
-
 void SparseMatrix::setVal(int row, int col, double val) {
 	if (val == 0) return;
 	rcvs.push_back({row, col, val});
@@ -16,7 +12,6 @@ void SparseMatrix::setValue(int row, int col, double val) {
 		}
 	}
 	setVal(row, col, val);
-	sort();
 }
 
 void SparseMatrix::print() {
@@ -54,7 +49,6 @@ void SparseMatrix::resize(int nr, int nc) {
 	}
 	nCol = nc;
 	nRow = nr;
-	sort();
 }
 
 bool SparseMatrix::readFromFile(string filename) {
@@ -71,10 +65,10 @@ bool SparseMatrix::readFromFile(string filename) {
 		if (nCol < col) resize(nRow, col);
 		setVal(row, col, val);
 	}
-	sort();
 	return true;
 }
 
+//operator
 SparseMatrix SparseMatrix::operator+(SparseMatrix &M) {
 	return plus_minus(M, true);
 }
@@ -85,57 +79,40 @@ SparseMatrix SparseMatrix::operator-(SparseMatrix &M) {
 
 SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
 	SparseMatrix tmp(nRow, nCol);
-	int a = 0;
-	int b = 0;
-	while (a < rcvs.size() && b < M.rcvs.size()) {
+	int size_a = rcvs.size();
+	int size_b = M.rcvs.size();
+	for (int a = 0; a < size_a; a++) {
 		int &row_a = rcvs[a].row;
-		int &row_b = M.rcvs[b].row;
-		int &col_a = rcvs[a].col;
-		int &col_b = M.rcvs[b].col;
 		double &val_a = rcvs[a].val;
+		int &col_a = rcvs[a].col;
+		tmp.setVal(row_a, col_a, val_a);
+	}
+	for (int b = 0; b < size_b; b++) {
+		int &row_b = M.rcvs[b].row;
+		int &col_b = M.rcvs[b].col;
 		double &val_b = M.rcvs[b].val;
-		if (row_a == row_b) {
-			if (col_a == col_b) {
-				double new_val = isPlus ? val_a + val_b : val_a - val_b;
-				tmp.setVal(row_a, col_a, new_val);
-				a += 1;
-				b += 1;
-			} else if (col_a < col_b) {
-				tmp.setVal(row_a, col_a, val_a);
-				a += 1;
-			} else {
-				tmp.setVal(row_b, col_b, val_b);
-				b += 1;
-			}
-		} else if (row_a < row_b) {
-			tmp.setVal(row_a, col_a, val_a);
-			a += 1;
-		} else {
-			tmp.setVal(row_b, col_b, val_b);
-			b += 1;
-		}
+		double new_val = tmp.getValue(row_b, col_b);
+		new_val = isPlus ? new_val + val_b : new_val - val_b;
+		tmp.setValue(row_b, col_b, new_val);
 	}
 	return tmp;
 }
 
 SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	SparseMatrix tmp(nRow, M.nCol);
-	int a = 0;
-	int b = 0;
-	double new_val = 0;
 	int size_a = rcvs.size();
 	int size_b = M.rcvs.size();
-	for (; a < size_a; a++) {
+	for (int a = 0; a < size_a; a++) {
 		int &row_a = rcvs[a].row;
 		int &col_a = rcvs[a].col;
 		double &val_a = rcvs[a].val;
 
-		for (b = 0; b < size_b; b++) {
+		for (int b = 0; b < size_b; b++) {
 			int &row_b = M.rcvs[b].row;
 			int &col_b = M.rcvs[b].col;
 			double &val_b = M.rcvs[b].val;
 			if (col_a == row_b) {
-				new_val = tmp.getValue(row_a, col_b) + val_a * val_b;
+				double new_val = tmp.getValue(row_a, col_b) + val_a * val_b;
 				tmp.setValue(row_a, col_b, new_val);
 			}
 		}
@@ -144,23 +121,50 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 }
 
 bool SparseMatrix::operator==(SparseMatrix &M) {
-	return false;
+	for (int i = 0; i < rcvs.size(); i++) {
+		int &row = rcvs[i].row;
+		int &col = rcvs[i].col;
+		double &val = rcvs[i].val;
+		if (val != M.getValue(row, col)) return false;
+	}
+	return true;
 }
 
 SparseMatrix SparseMatrix::operator-() {
 	SparseMatrix tmp;
+	tmp.rcvs = this->rcvs;
+	for (int i = 0; i < rcvs.size(); i++) {
+		tmp.rcvs[i].val = -tmp.rcvs[i].val;
+	}
 	return tmp;
 }
 
 double SparseMatrix::rowSum(int row) { // calculate the sum of elements in a "row"-th row
-	return 0;
+	double sum = 0;
+	for (int i = 0; i < rcvs.size(); i++) {
+		if (rcvs[i].row == row)
+			sum += rcvs[i].val;
+	}
+	return sum;
 }
 double SparseMatrix::colSum(int col) { // calculate the sum of elements in a "col"-th column
-	return 0;
+	double sum = 0;
+	for (int i = 0; i < rcvs.size(); i++) {
+		if (rcvs[i].col == col)
+			sum += rcvs[i].val;
+	}
+	return sum;
 }
 double SparseMatrix::sum() { // calculate the sum of all elements
-	return 0;
+	double sum = 0;
+	for (int i = 0; i < rcvs.size(); i++) {
+		sum += rcvs[i].val;
+	}
+	return sum;
 }
 bool SparseMatrix::isAllAbsLessThan(double val) {
-	return false;
+	for (int i = 0; i < rcvs.size(); i++) {
+		if (rcvs[i].val > val) return false;
+	}
+	return true;
 }

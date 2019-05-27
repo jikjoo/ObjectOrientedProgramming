@@ -30,6 +30,9 @@ void test1()
 	else cout << "fail" << endl;
 	
 	C = A+B;
+	A.print();
+	B.print();
+	C.print();
 	cout << "\tAddition: ";
 	if( C.getValue(3,2)==1.3 && C.getValue(1,1)==5 && C.getNumOfNonZeros()==2 ) cout << "pass" << endl;
 	else cout << "fail" << endl;
