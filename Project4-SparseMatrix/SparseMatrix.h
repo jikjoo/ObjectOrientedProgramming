@@ -73,6 +73,7 @@ private:
 		else
 			return false;
 	};
+	rcv *getRcv(int row, int col);
 	vector<rcv> rcvs;
 };
 

@@ -125,27 +125,20 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	double new_val = 0;
 	int size_a = rcvs.size();
 	int size_b = M.rcvs.size();
-	while (a < size_a) {
+	for (; a < size_a; a++) {
 		int &row_a = rcvs[a].row;
 		int &col_a = rcvs[a].col;
 		double &val_a = rcvs[a].val;
-		int *col_b;
-		int *row_b;
-		double *val_b;
 
 		for (b = 0; b < size_b; b++) {
-			row_b = &M.rcvs[b].row;
-			val_b = &M.rcvs[b].val;
-			if (col_a == *row_b) {
-				new_val += val_a * *val_b;
-				col_b = &M.rcvs[b].row;
+			int &row_b = M.rcvs[b].row;
+			int &col_b = M.rcvs[b].col;
+			double &val_b = M.rcvs[b].val;
+			if (col_a == row_b) {
+				new_val = tmp.getValue(row_a, col_b) + val_a * val_b;
+				tmp.setValue(row_a, col_b, new_val);
 			}
 		}
-		if (row_a != rcvs[a - 1].row && row_a > 0) {
-			tmp.setVal(row_a, *col_b, new_val);
-			new_val = 0;
-		}
-		a += 1;
 	}
 	return tmp;
 }
