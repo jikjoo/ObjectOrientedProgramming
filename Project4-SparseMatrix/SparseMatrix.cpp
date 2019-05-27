@@ -14,8 +14,10 @@ void SparseMatrix::setValue(int row, int col, double val) {
 		if (rcvs[i].row == row && rcvs[i].col == col) {
 			rcvs.erase(rcvs.begin() + i);
 		}
+		else if(rcvs[i].row > row) break;
 	}
 	setVal(row, col, val);
+	sort();
 }
 
 void SparseMatrix::print() {
@@ -41,6 +43,8 @@ double SparseMatrix::getValue(int row, int col) {
 	for (int pos = 0; pos < rcvs.size(); pos++) {
 		if (rcvs[pos].row == row && rcvs[pos].col == col)
 			return rcvs[pos].val;
+		else if (rcvs[pos].row > row)
+			return 0;
 	}
 	return 0;
 }
@@ -71,6 +75,7 @@ bool SparseMatrix::readFromFile(string filename) {
 		if (nCol < col) resize(nRow, col);
 		setVal(row, col, val);
 	}
+	sort();
 	return true;
 }
 
@@ -108,27 +113,31 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	SparseMatrix tmp(nRow, M.nCol);
 	int size_a = rcvs.size();
 	int size_b = M.rcvs.size();
-	vector<int> IA(M.nRow + 1, 0);
-	// IA of M
-	M.sort();
-	int c = 0;
-	for (int i = 0; i < IA.size(); i++) {
-		int &row = M.rcvs[i].row;
-		int &next_row = M.rcvs[i+1].row;
-		if(row != next_row) c++;
+	vector<int> cp(nCol + 1,0); // cp : col_a = row_b
+	for (int a = 0; a < size_a; a++) {
+		int &col_a = rcvs[a].col;
+		cp[col_a] = 1;
+	}
+	for (int b = 0; b < size_b; b++) {
+		int &row_b = M.rcvs[b].row;
+		if(cp[row_b] == 1) cp[row_b] = 2;
 	}
 	for (int a = 0; a < size_a; a++) {
 		int &row_a = rcvs[a].row;
 		int &col_a = rcvs[a].col;
 		double &val_a = rcvs[a].val;
-		double new_val = 0;
-		for (int b = IA[col_a]; b < IA[col_a + 1]; b++) {
-			int &row_b = M.rcvs[b].row;
-			int &col_b = M.rcvs[b].col;
-			double &val_b = M.rcvs[b].val;
-			new_val += val_a * val_b;
+		if (cp[col_a] > 1) {
+			for (int b = 0; b < size_b; b++) {
+				int &row_b = M.rcvs[b].row;
+				int &col_b = M.rcvs[b].col;
+				double &val_b = M.rcvs[b].val;
+				if (col_a == row_b) {
+					double new_val = tmp.getValue(row_a, col_b) + val_a * val_b;
+					tmp.setValue(row_a, col_b, new_val);
+				}
+				else if(row_b > col_a) break;
+			}
 		}
-		tmp.setVal(row_a, col_b, new_val);
 	}
 	return tmp;
 }
