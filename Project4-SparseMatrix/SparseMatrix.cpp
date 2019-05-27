@@ -2,7 +2,8 @@
 
 void SparseMatrix::setVal(int row, int col, double val) {
 	if (val == 0) return;
-	rcvs.push_back({row, col, val});
+	rcv _rcv = {row, col, val};
+	rcvs.push_back(_rcv);
 }
 
 void SparseMatrix::setValue(int row, int col, double val) {
@@ -52,7 +53,7 @@ void SparseMatrix::resize(int nr, int nc) {
 }
 
 bool SparseMatrix::readFromFile(string filename) {
-	ifstream infile(filename);
+	ifstream infile(filename.c_str());
 	if (!infile.is_open()) {
 		cout << "can not open";
 		return false;

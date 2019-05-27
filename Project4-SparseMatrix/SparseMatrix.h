@@ -1,11 +1,10 @@
 #ifndef _SPARSE_MATRIX_H_
 #define _SPARSE_MATRIX_H_
-#define DEBUG
+//#define DEBUG
 
-#include <algorithm>
+//#include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <map>
 #include <string>
 #include <vector>
 
