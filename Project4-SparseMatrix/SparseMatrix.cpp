@@ -43,9 +43,11 @@ double SparseMatrix::getValue(int row, int col) {
 }
 
 void SparseMatrix::resize(int nr, int nc) {
-	for (int pos = 0; pos < rcvs.size(); pos++) {
-		if (rcvs[pos].row > nr || rcvs[pos].col > nc) {
-			rcvs.erase(rcvs.begin() + pos);
+	if (nRow > nr || nCol > nc) {
+		for (int pos = 0; pos < rcvs.size(); pos++) {
+			if (rcvs[pos].row > nr || rcvs[pos].col > nc) {
+				rcvs.erase(rcvs.begin() + pos);
+			}
 		}
 	}
 	nCol = nc;
@@ -103,7 +105,7 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	SparseMatrix tmp(nRow, M.nCol);
 	int size_a = rcvs.size();
 	int size_b = M.rcvs.size();
-	for (int a = 0; a < size_a; a++) {
+	/* for (int a = 0; a < size_a; a++) {
 		int &row_a = rcvs[a].row;
 		int &col_a = rcvs[a].col;
 		double &val_a = rcvs[a].val;
@@ -117,7 +119,33 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 				tmp.setValue(row_a, col_b, new_val);
 			}
 		}
+	} */
+	vector<int> cp(nCol + 1,0); // cp : col_a = row_b
+	for (int a = 0; a < size_a; a++) {
+		int &col_a = rcvs[a].col;
+		cp[col_a] = 1;
 	}
+	for (int b = 0; b < size_b; b++) {
+		int &row_b = M.rcvs[b].row;
+		if(cp[row_b] == 1) cp[row_b] = 2;
+	}
+	for (int a = 0; a < size_a; a++) {
+		int &row_a = rcvs[a].row;
+		int &col_a = rcvs[a].col;
+		double &val_a = rcvs[a].val;
+		if (cp[col_a] > 1) {
+			for (int b = 0; b < size_b; b++) {
+				int &row_b = M.rcvs[b].row;
+				int &col_b = M.rcvs[b].col;
+				double &val_b = M.rcvs[b].val;
+				if (col_a == row_b) {
+					double new_val = tmp.getValue(row_a, col_b) + val_a * val_b;
+					tmp.setValue(row_a, col_b, new_val);
+				}
+			}
+		}
+	}
+
 	return tmp;
 }
 
