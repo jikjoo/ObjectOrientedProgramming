@@ -29,7 +29,12 @@
 			"system_error": "cpp",
 			"type_traits": "cpp",
 			"typeinfo": "cpp",
-			"iomanip": "cpp"
+			"iomanip": "cpp",
+			"array": "cpp",
+			"deque": "cpp",
+			"list": "cpp",
+			"unordered_map": "cpp",
+			"vector": "cpp"
 		}
 	}
 }
