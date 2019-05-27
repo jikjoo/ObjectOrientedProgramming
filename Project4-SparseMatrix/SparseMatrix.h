@@ -16,6 +16,7 @@ public:
 	SparseMatrix(int nr = 1, int nc = 1) {
 		this->nRow = nr;
 		this->nCol = nc;
+		IA = vector<int>(nRow+1);
 	}
 	~SparseMatrix() {
 		rcvs.clear();
@@ -58,6 +59,7 @@ private:
 	// declare whatever you want
 	int nRow, nCol;
 	void setVal(int row, int col, double val); // setValues without sortbool
+	vector<int> IA;
 	struct rcv {
 		int row;
 		int col;

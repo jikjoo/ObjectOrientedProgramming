@@ -1,6 +1,11 @@
 #include "SparseMatrix.h"
 void SparseMatrix::sort() {
 	std::sort(rcvs.begin(), rcvs.end(), this->compRowCol);
+	// set IA
+	for (int i = 0; i < rcvs.size(); i++) {
+		if (i == 0 || rcvs[i].row != rcvs[i - 1].row)
+			IA[rcvs[i].row] = i;
+	}
 }
 
 void SparseMatrix::setVal(int row, int col, double val) {
@@ -10,11 +15,11 @@ void SparseMatrix::setVal(int row, int col, double val) {
 }
 
 void SparseMatrix::setValue(int row, int col, double val) {
-	for (int i = 0; i < rcvs.size(); i++) { // check duplicate
+	for (int i = IA[row]; i < rcvs.size(); i++) { // check duplicate
 		if (rcvs[i].row == row && rcvs[i].col == col) {
 			rcvs.erase(rcvs.begin() + i);
-		}
-		else if(rcvs[i].row > row) break;
+		} else if (rcvs[i].row > row)
+			break;
 	}
 	setVal(row, col, val);
 	sort();
@@ -36,11 +41,16 @@ void SparseMatrix::print() {
 	}
 
 	cout << "]" << endl;
+
+	/* cout << endl;
+	for (int i = 0; i < IA.size(); i++) {
+		cout << IA[i] << " ";
+	} */
 #endif
 }
 
 double SparseMatrix::getValue(int row, int col) {
-	for (int pos = 0; pos < rcvs.size(); pos++) {
+	for (int pos = IA[row]; pos < rcvs.size(); pos++) {
 		if (rcvs[pos].row == row && rcvs[pos].col == col)
 			return rcvs[pos].val;
 		else if (rcvs[pos].row > row)
@@ -59,6 +69,8 @@ void SparseMatrix::resize(int nr, int nc) {
 	}
 	nCol = nc;
 	nRow = nr;
+	IA = vector<int>(nRow + 1);
+	sort();
 }
 
 bool SparseMatrix::readFromFile(string filename) {
@@ -113,29 +125,29 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	SparseMatrix tmp(nRow, M.nCol);
 	int size_a = rcvs.size();
 	int size_b = M.rcvs.size();
-	vector<int> cp(nCol + 1,0); // cp : col_a = row_b
+	vector<int> cp(nCol + 1, 0); // cp : col_a = row_b
 	for (int a = 0; a < size_a; a++) {
 		int &col_a = rcvs[a].col;
 		cp[col_a] = 1;
 	}
 	for (int b = 0; b < size_b; b++) {
 		int &row_b = M.rcvs[b].row;
-		if(cp[row_b] == 1) cp[row_b] = 2;
+		if (cp[row_b] == 1) cp[row_b] = 2;
 	}
 	for (int a = 0; a < size_a; a++) {
 		int &row_a = rcvs[a].row;
 		int &col_a = rcvs[a].col;
 		double &val_a = rcvs[a].val;
 		if (cp[col_a] > 1) {
-			for (int b = 0; b < size_b; b++) {
+			for (int b = M.IA[col_a]; b < size_b; b++) {
 				int &row_b = M.rcvs[b].row;
 				int &col_b = M.rcvs[b].col;
 				double &val_b = M.rcvs[b].val;
 				if (col_a == row_b) {
 					double new_val = tmp.getValue(row_a, col_b) + val_a * val_b;
 					tmp.setValue(row_a, col_b, new_val);
-				}
-				else if(row_b > col_a) break;
+				} else if (row_b > col_a)
+					break;
 			}
 		}
 	}
