@@ -20,6 +20,7 @@ public:
 	}
 	~SparseMatrix() {
 		rcvs.clear();
+		IA.clear();
 	}
 
 	// resize the matrix to nr x nc.
@@ -67,10 +68,7 @@ private:
 		/* data */
 	};
 	static bool compRowCol(const rcv &a, const rcv &b) {
-		if (a.row < b.row || (a.row == b.row && a.col < b.col))
-			return true;
-		else
-			return false;
+		return a.row < b.row;
 	};
 	vector<rcv> rcvs;
 };

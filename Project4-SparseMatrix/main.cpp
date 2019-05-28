@@ -21,9 +21,9 @@ void test1()
 	B.setValue(1,3,-2); B.setValue(3,2,0.3); B.setValue(1,1,5);
 	
 	cout << "\tAssignment: ";
+	A.print();
 	if( A.getValue(1,3)==2 && A.getValue(5,2)==3 && A.getValue(1,1)==0 && A.getNumOfNonZeros()==3 ) cout << "pass" << endl;
 	else cout << "fail" << endl;
-	
 	A.resize(3,3);
 	cout << "\tResizing: ";
 	if( A.getNumRows()==3 && A.getNumCols()==3 && A.getNumOfNonZeros()==2 ) cout << "pass" << endl;
