@@ -7,6 +7,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <streambuf>
+#include <
 
 using namespace std;
 
@@ -62,8 +64,8 @@ private:
 	void setVal(int row, int col, double val); // setValues without sortbool
 	vector<int> IA;
 	struct rcv {
-		int row;
-		int col;
+		uint32_t row;
+		uint32_t col;
 		double val;
 		/* data */
 	};

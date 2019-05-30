@@ -78,13 +78,18 @@ void SparseMatrix::resize(int nr, int nc) {
 
 bool SparseMatrix::readFromFile(string filename) {
 	ifstream infile(filename.c_str());
-	if (!infile.is_open()) {
-		cout << "can not open";
-		return false;
-	}
-	int row;
-	int col;
+	uint32_t row;
+	uint32_t col;
 	double val;
+	char* linbuf = nullptr; /// or nullptr in C++
+	size_t linsiz = 0;
+	size_t linlen = 0;
+	FILE *fil;
+	fscanf(fil,filename.c_str());
+	while((linlen=getline(&linbuf, &linsiz,fil))>=0) {
+	// do something useful with linbuf; but no C++ exceptions
+	}
+	free(linbuf); linsiz=0;
 	while (infile >> row >> col >> val) {
 		if (nRow < row) resize(row, nCol);
 		if (nCol < col) resize(nRow, col);
@@ -108,14 +113,14 @@ SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
 	int size_a = rcvs.size();
 	int size_b = M.rcvs.size();
 	for (int a = 0; a < size_a; a++) {
-		int &row_a = rcvs[a].row;
+		uint32_t &row_a = rcvs[a].row;
 		double &val_a = rcvs[a].val;
-		int &col_a = rcvs[a].col;
+		uint32_t &col_a = rcvs[a].col;
 		tmp.setValue(row_a, col_a, val_a);
 	}
 	for (int b = 0; b < size_b; b++) {
-		int &row_b = M.rcvs[b].row;
-		int &col_b = M.rcvs[b].col;
+		uint32_t &row_b = M.rcvs[b].row;
+		uint32_t &col_b = M.rcvs[b].col;
 		double &val_b = M.rcvs[b].val;
 		double new_val = tmp.getValue(row_b, col_b);
 		new_val = isPlus ? new_val + val_b : new_val - val_b;
@@ -130,21 +135,21 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	int size_b = M.rcvs.size();
 	vector<int> cp(nCol + 1, 0); // cp : col_a = row_b
 	for (int a = 0; a < size_a; a++) {
-		int &col_a = rcvs[a].col;
+		uint32_t &col_a = rcvs[a].col;
 		cp[col_a] = 1;
 	}
 	for (int b = 0; b < size_b; b++) {
-		int &row_b = M.rcvs[b].row;
+		uint32_t &row_b = M.rcvs[b].row;
 		if (cp[row_b] == 1) cp[row_b] = 2;
 	}
 	for (int a = 0; a < size_a; a++) {
-		int &row_a = rcvs[a].row;
-		int &col_a = rcvs[a].col;
+		uint32_t &row_a = rcvs[a].row;
+		uint32_t &col_a = rcvs[a].col;
 		double &val_a = rcvs[a].val;
 		if (cp[col_a] > 1) {
 			for (int b = M.IA[col_a -1]; b < M.IA[col_a]; b++) {
-				int &row_b = M.rcvs[b].row;
-				int &col_b = M.rcvs[b].col;
+				uint32_t &row_b = M.rcvs[b].row;
+				uint32_t &col_b = M.rcvs[b].col;
 				double &val_b = M.rcvs[b].val;
 				if (col_a == row_b) {
 					double new_val = tmp.getValue(row_a, col_b) + val_a * val_b;
@@ -158,8 +163,8 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 
 bool SparseMatrix::operator==(SparseMatrix &M) {
 	for (int i = 0; i < rcvs.size(); i++) {
-		int &row = rcvs[i].row;
-		int &col = rcvs[i].col;
+		uint32_t &row = rcvs[i].row;
+		uint32_t &col = rcvs[i].col;
 		double &val = rcvs[i].val;
 		if (val != M.getValue(row, col)) return false;
 	}
