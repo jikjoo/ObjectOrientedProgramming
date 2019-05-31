@@ -7,8 +7,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <streambuf>
-#include <
 
 using namespace std;
 
@@ -18,7 +16,7 @@ public:
 	SparseMatrix(int nr = 1, int nc = 1) {
 		this->nRow = nr;
 		this->nCol = nc;
-		IA = vector<int>(nRow+1);
+		IA = vector<int>(nRow + 1);
 	}
 	~SparseMatrix() {
 		rcvs.clear();
@@ -37,10 +35,10 @@ public:
 	// read a sparse matrix from a text file
 	// the file format is "row col val"
 	bool readFromFile(string filename);
-
 	// data access
 	void setValue(int row, int col, double val); // write val at (i,j)
 	double getValue(int row, int col);			 // read value of (i,j)
+	void getSetValue(int row, int col, double val, int func); // set val at (i,j) with function
 	void sort();
 	// operations
 	SparseMatrix operator+(SparseMatrix &M); // matrix addition
@@ -58,21 +56,22 @@ public:
 	//print
 	void print();
 
-private:
-	// declare whatever you want
-	int nRow, nCol;
-	void setVal(int row, int col, double val); // setValues without sortbool
-	vector<int> IA;
 	struct rcv {
 		uint32_t row;
 		uint32_t col;
 		double val;
 		/* data */
 	};
+	vector<rcv> rcvs;
+
+private:
+	// declare whatever you want
+	int nRow, nCol;
+	void setVal(uint32_t row, uint32_t col, double val); // setValues without sortbool
+	vector<int> IA;
 	static bool compRowCol(const rcv &a, const rcv &b) {
 		return a.row < b.row;
 	};
-	vector<rcv> rcvs;
 };
 
 #endif

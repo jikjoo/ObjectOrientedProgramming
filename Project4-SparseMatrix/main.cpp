@@ -19,9 +19,9 @@ void test1()
 	SparseMatrix A(5,5), B(3,3), C;
 	A.setValue(3,2,1); A.setValue(1,3,2); A.setValue(5,2,3);
 	B.setValue(1,3,-2); B.setValue(3,2,0.3); B.setValue(1,1,5);
+	A.print();
 	
 	cout << "\tAssignment: ";
-	A.print();
 	if( A.getValue(1,3)==2 && A.getValue(5,2)==3 && A.getValue(1,1)==0 && A.getNumOfNonZeros()==3 ) cout << "pass" << endl;
 	else cout << "fail" << endl;
 	A.resize(3,3);
@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
 {
 	test1();
 	test2();
-	test3();
+	//test3();
 	test4();
 			
 	return 0;
