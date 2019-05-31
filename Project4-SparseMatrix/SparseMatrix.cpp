@@ -21,15 +21,14 @@ void SparseMatrix::setVal(uint32_t row, uint32_t col, double val) {
 	rcvs.push_back(_rcv);
 	return;
 }
-
 void SparseMatrix::setValue(int row, int col, double val) {
-	for (int i = IA[row - 1]; i < IA[row]; i++) { // check duplicate
-		if (rcvs[i].row == row && rcvs[i].col == col) {
-			rcvs.erase(rcvs.begin() + i);
-		}
+	if (val == 0 || row > nRow || col > nCol) return;
+	rcv _rcv = {row, col, val};
+	int pos = IA[row];
+	rcvs.insert(rcvs.begin() + pos, _rcv);
+	for (int i = row; i < IA.size(); i++) {
+		IA[i]++;
 	}
-	setVal(row, col, val);
-	sort();
 	return;
 }
 
@@ -42,17 +41,22 @@ double SparseMatrix::getValue(int row, int col) {
 }
 
 void SparseMatrix::getSetValue(int row, int col, double val, int func) {
-	if (val == 0) return;
+	bool dupl = false;
 	for (int pos = IA[row - 1]; pos < IA[row]; pos++) {
 		if (rcvs[pos].row == row && rcvs[pos].col == col) {
 			double mval = rcvs[pos].val;
 			val = func == 0 ? mval + val : mval - val;
-			rcvs.erase(rcvs.begin() + pos);
+			dupl = true;
+			if (val == 0) {
+				rcvs.erase(rcvs.begin() + pos);
+				for (int i = row; i < IA.size(); i++)
+					--IA[i];
+			} else
+				rcvs[pos].val = val;
 			break;
 		}
 	}
-	setVal(row, col, val);
-	sort();
+	if (!dupl) setValue(row, col, val);
 	return;
 }
 
@@ -61,27 +65,35 @@ void SparseMatrix::resize(int nr, int nc) {
 		for (int pos = 0; pos < rcvs.size(); pos++) {
 			if (rcvs[pos].row > nr || rcvs[pos].col > nc) {
 				rcvs.erase(rcvs.begin() + pos);
+				for (int i = rcvs[pos].row; i < IA.size(); i++) {
+					--IA[i];
+				}
 			}
+		}
+	}
+	IA.resize(nr + 1);
+	if (nRow < nr) {
+		for (int i = nRow + 1; i < IA.size(); i++) {
+			IA[i] = rcvs.size();
 		}
 	}
 	nCol = nc;
 	nRow = nr;
-	IA = vector<int>(nRow + 1);
-	sort();
 }
 bool SparseMatrix::readFromFile(string filename) {
 	uint32_t row;
 	uint32_t col;
 	double val;
-	int max_row = 0;
-	int max_col = 0;
+	int maxrow = 0;
+	int maxcol = 0;
 	ifstream infile(filename.c_str());
 	while (infile >> row >> col >> val) {
-		if (max_row < row) max_row = row;
-		if (max_col < col) max_col = col;
+		if (maxrow < row) maxrow = row;
+		if (maxcol < col) maxcol = col;
 		setVal(row, col, val);
 	}
-	resize(max_row, max_col);
+	resize(maxrow, maxcol);
+	sort();
 #ifdef DEBUG
 	cout << filename << " file loaded" << endl;
 #endif
@@ -99,9 +111,10 @@ SparseMatrix SparseMatrix::operator-(SparseMatrix &M) {
 
 SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
 	SparseMatrix tmp(nRow, nCol);
+	if (nRow != M.nRow || nCol != M.nCol) return tmp;
 	int size_b = M.rcvs.size();
 	tmp.rcvs = rcvs;
-	tmp.sort();
+	tmp.IA = IA;
 	for (int b = 0; b < size_b; b++) {
 		uint32_t row_b = M.rcvs[b].row;
 		uint32_t col_b = M.rcvs[b].col;
@@ -114,30 +127,20 @@ SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
 
 SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	SparseMatrix tmp(nRow, M.nCol);
+	if (nCol != M.nRow) return tmp;
 	int size_a = rcvs.size();
 	int size_b = M.rcvs.size();
-	vector<int> cp(nCol + 1, 0); // cp : col_a = row_b
-	for (int a = 0; a < size_a; a++) {
-		uint32_t col_a = rcvs[a].col;
-		cp[col_a] = 1;
-	}
-	for (int b = 0; b < size_b; b++) {
-		uint32_t row_b = M.rcvs[b].row;
-		if (cp[row_b] == 1) cp[row_b] = 2;
-	}
 	for (int a = 0; a < size_a; a++) {
 		uint32_t row_a = rcvs[a].row;
 		uint32_t col_a = rcvs[a].col;
 		double val_a = rcvs[a].val;
-		if (cp[col_a] > 1) {
-			for (int b = M.IA[col_a - 1]; b < M.IA[col_a]; b++) {
-				uint32_t row_b = M.rcvs[b].row;
-				uint32_t col_b = M.rcvs[b].col;
-				double val_b = M.rcvs[b].val;
-				if (col_a == row_b) {
-					double new_val = val_a * val_b;
-					tmp.getSetValue(row_a, col_b, new_val, 0);
-				}
+		for (int b = M.IA[col_a - 1]; b < M.IA[col_a]; b++) {
+			uint32_t row_b = M.rcvs[b].row;
+			uint32_t col_b = M.rcvs[b].col;
+			double val_b = M.rcvs[b].val;
+			if (col_a == row_b) {
+				double new_val = val_a * val_b;
+				tmp.getSetValue(row_a, col_b, new_val, 0);
 			}
 		}
 	}

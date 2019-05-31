@@ -28,6 +28,7 @@ void test1()
 	cout << "\tResizing: ";
 	if( A.getNumRows()==3 && A.getNumCols()==3 && A.getNumOfNonZeros()==2 ) cout << "pass" << endl;
 	else cout << "fail" << endl;
+	A.print();
 	
 	C = A+B;
 	A.print();
@@ -133,7 +134,7 @@ int main(int argc, char* argv[])
 {
 	test1();
 	test2();
-	//test3();
+	test3();
 	test4();
 			
 	return 0;
