@@ -16,29 +16,28 @@ public:
 	SparseMatrix(int nr = 1, int nc = 1) {
 		this->nRow = nr;
 		this->nCol = nc;
-		IA = vector<int>(nRow + 1);
+		rows = vector<vector<pair_cv>>(nr+1,vector<pair_cv>());
 	}
 	~SparseMatrix() {
-		rcvs.clear();
-		IA.clear();
+		rows.clear();
 	}
 
 	// resize the matrix to nr x nc.
 	// if increased, the added parts are filled with zeros
 	void resize(int nr, int nc);
 
-	int getNumRows() { return nRow; };				// return number of rows
-	int getNumCols() { return nCol; };				// return number of columns
-	int getNumOfNonZeros() { return rcvs.size(); }; // return number of non-zero elements
+	int getNumRows() { return nRow; };		   // return number of rows
+	int getNumCols() { return nCol; };		   // return number of columns
+	int getNumOfNonZeros(); // return number of non-zero elements
 
 	// file access
 	// read a sparse matrix from a text file
 	// the file format is "row col val"
 	bool readFromFile(string filename);
 	// data access
-	void setValue(int row, int col, double val); // write val at (i,j)
-	double getValue(int row, int col);			 // read value of (i,j)
-	void getSetValue(int row, int col, double val, int func); // set val at (i,j) with function
+	void setValue(int row, int col, double val);			  // write val at (i,j)
+	double getValue(int row, int col);						  // read value of (i,j)
+	void getSetValue(int row, int col, double val, bool isPlus); // set val at (i,j) with function
 	void sort();
 	// operations
 	SparseMatrix operator+(SparseMatrix &M); // matrix addition
@@ -56,22 +55,13 @@ public:
 	//print
 	void print();
 
-	struct rcv {
-		uint32_t row;
-		uint32_t col;
-		double val;
-		/* data */
-	};
-	vector<rcv> rcvs;
+	typedef pair<int, double> pair_cv;
+	vector<vector<pair_cv>> rows;
 
 private:
 	// declare whatever you want
-	int nRow, nCol;
+	int nRow, nCol, nNzero;
 	void setVal(uint32_t row, uint32_t col, double val); // setValues without sortbool
-	vector<int> IA;
-	static bool compRowCol(const rcv &a, const rcv &b) {
-		return a.row < b.row;
-	};
 };
 
 #endif

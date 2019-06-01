@@ -1,59 +1,33 @@
 #include "SparseMatrix.h"
-void SparseMatrix::sort() {
-	std::sort(rcvs.begin(), rcvs.end(), this->compRowCol);
-	// set IA
-	int cnt = 0;
-	for (int i = 0; i < rcvs.size(); i++) {
-		int row = rcvs[i].row;
-		int next_row = (i == rcvs.size() - 1) ? nRow + 1 : rcvs[i + 1].row;
-		cnt++;
-		if (row != next_row) {
-			for (int j = row; j < next_row; j++)
-				IA[j] = cnt;
-		}
-	}
-	return;
-}
 
-void SparseMatrix::setVal(uint32_t row, uint32_t col, double val) {
-	if (val == 0) return;
-	rcv _rcv = {row, col, val};
-	rcvs.push_back(_rcv);
-	return;
-}
 void SparseMatrix::setValue(int row, int col, double val) {
-	if (val == 0 || row > nRow || col > nCol) return;
-	rcv _rcv = {row, col, val};
-	int pos = IA[row];
-	rcvs.insert(rcvs.begin() + pos, _rcv);
-	for (int i = row; i < IA.size(); i++) {
-		IA[i]++;
-	}
+	if (val == 0 || row > nRow) return;
+	rows[row].push_back(pair_cv(col, val));
+	nNzero++;
 	return;
 }
 
 double SparseMatrix::getValue(int row, int col) {
-	for (int pos = IA[row - 1]; pos < IA[row]; pos++) {
-		if (rcvs[pos].row == row && rcvs[pos].col == col)
-			return rcvs[pos].val;
+	int size = rows[row].size();
+	for (int i = 0; i <= size; i++) {
+		if (rows[row][i].first == col)
+			return rows[row][i].second;
 	}
 	return 0;
 }
 
-void SparseMatrix::getSetValue(int row, int col, double val, int func) {
+void SparseMatrix::getSetValue(int row, int col, double val, bool isPlus) {
 	bool dupl = false;
-	for (int pos = IA[row - 1]; pos < IA[row]; pos++) {
-		if (rcvs[pos].row == row && rcvs[pos].col == col) {
-			double mval = rcvs[pos].val;
-			val = func == 0 ? mval + val : mval - val;
+	for (int cv = 0; cv < rows[row].size(); cv++) {
+		if (rows[row][cv].first == col) {
 			dupl = true;
+			double &mval = rows[row][cv].second;
+			val = isPlus ? mval + val : mval - val;
 			if (val == 0) {
-				rcvs.erase(rcvs.begin() + pos);
-				for (int i = row; i < IA.size(); i++)
-					--IA[i];
-			} else
-				rcvs[pos].val = val;
-			break;
+				rows[row].erase(rows[row].begin() + cv);
+				return;
+			};
+			mval = val;
 		}
 	}
 	if (!dupl) setValue(row, col, val);
@@ -61,20 +35,14 @@ void SparseMatrix::getSetValue(int row, int col, double val, int func) {
 }
 
 void SparseMatrix::resize(int nr, int nc) {
-	if (nRow > nr || nCol > nc) {
-		for (int pos = 0; pos < rcvs.size(); pos++) {
-			if (rcvs[pos].row > nr || rcvs[pos].col > nc) {
-				rcvs.erase(rcvs.begin() + pos);
-				for (int i = rcvs[pos].row; i < IA.size(); i++) {
-					--IA[i];
+	rows.resize(nr + 1);
+	if (nCol > nc) {
+		for (int i = 1; i < nr; i++) {
+			for (int j = 0; j < rows[i].size(); j++) {
+				if (rows[i].at(j).first > nc) {
+					rows[i].erase(rows[i].begin() + j);
 				}
 			}
-		}
-	}
-	IA.resize(nr + 1);
-	if (nRow < nr) {
-		for (int i = nRow + 1; i < IA.size(); i++) {
-			IA[i] = rcvs.size();
 		}
 	}
 	nCol = nc;
@@ -84,16 +52,14 @@ bool SparseMatrix::readFromFile(string filename) {
 	uint32_t row;
 	uint32_t col;
 	double val;
-	int maxrow = 0;
 	int maxcol = 0;
 	ifstream infile(filename.c_str());
 	while (infile >> row >> col >> val) {
-		if (maxrow < row) maxrow = row;
+		if (nRow < row) resize(row, nCol);
 		if (maxcol < col) maxcol = col;
-		setVal(row, col, val);
+		setValue(row, col, val);
 	}
-	resize(maxrow, maxcol);
-	sort();
+	resize(nRow, maxcol);
 #ifdef DEBUG
 	cout << filename << " file loaded" << endl;
 #endif
@@ -112,15 +78,13 @@ SparseMatrix SparseMatrix::operator-(SparseMatrix &M) {
 SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
 	SparseMatrix tmp(nRow, nCol);
 	if (nRow != M.nRow || nCol != M.nCol) return tmp;
-	int size_b = M.rcvs.size();
-	tmp.rcvs = rcvs;
-	tmp.IA = IA;
-	for (int b = 0; b < size_b; b++) {
-		uint32_t row_b = M.rcvs[b].row;
-		uint32_t col_b = M.rcvs[b].col;
-		double val_b = M.rcvs[b].val;
-		int func = isPlus ? 0 : 1;
-		tmp.getSetValue(row_b, col_b, val_b, func);
+	tmp.rows = rows;
+	for (int rb = 1; rb <= M.nRow; rb++) {
+		for (int cvb = 0; cvb < M.rows[rb].size(); cvb++) {
+			int col_b = M.rows[rb][cvb].first;
+			double val_b = M.rows[rb][cvb].second;
+			tmp.getSetValue(rb, col_b, val_b, isPlus);
+		}
 	}
 	return tmp;
 }
@@ -128,19 +92,15 @@ SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
 SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	SparseMatrix tmp(nRow, M.nCol);
 	if (nCol != M.nRow) return tmp;
-	int size_a = rcvs.size();
-	int size_b = M.rcvs.size();
-	for (int a = 0; a < size_a; a++) {
-		uint32_t row_a = rcvs[a].row;
-		uint32_t col_a = rcvs[a].col;
-		double val_a = rcvs[a].val;
-		for (int b = M.IA[col_a - 1]; b < M.IA[col_a]; b++) {
-			uint32_t row_b = M.rcvs[b].row;
-			uint32_t col_b = M.rcvs[b].col;
-			double val_b = M.rcvs[b].val;
-			if (col_a == row_b) {
+	for (int ra = 1; ra <= nRow; ra++) {
+		for (int cva = 0; cva < rows[ra].size(); cva++) {
+			uint32_t col_a = rows[ra][cva].first;
+			double val_a = rows[ra][cva].second;
+			for (int cvb = 0; cvb < M.rows[col_a].size(); cvb++) {
+				uint32_t col_b = M.rows[col_a][cvb].first;
+				double val_b = M.rows[col_a][cvb].second;
 				double new_val = val_a * val_b;
-				tmp.getSetValue(row_a, col_b, new_val, 0);
+				tmp.getSetValue(ra, col_b, new_val, 0);
 			}
 		}
 	}
@@ -148,74 +108,84 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 }
 
 bool SparseMatrix::operator==(SparseMatrix &M) {
-	for (int i = 0; i < rcvs.size(); i++) {
-		uint32_t row = rcvs[i].row;
-		uint32_t col = rcvs[i].col;
-		double val = rcvs[i].val;
-		if (val != M.getValue(row, col)) return false;
+	if (nRow != M.nRow || nCol != M.nCol)
+		return false;
+	if (getNumOfNonZeros() != M.getNumOfNonZeros()) {
+		return false;
+	}
+	for (int r = 1; r <= nRow; r++) {
+		for (int cv = 0; cv < rows[r].size(); cv++) {
+			if (rows[r][cv].second != M.rows[r][cv].second)
+				return false;
+		}
 	}
 	return true;
 }
 
 SparseMatrix SparseMatrix::operator-() {
-	SparseMatrix tmp;
-	tmp.rcvs = this->rcvs;
-	for (int i = 0; i < rcvs.size(); i++) {
-		tmp.rcvs[i].val = -tmp.rcvs[i].val;
+	SparseMatrix tmp = *this;
+	for (int r = 1; r <= nRow; r++) {
+		for (int cv = 0; cv < rows[r].size(); cv++) {
+			rows[r][cv].second = -rows[r][cv].second;
+		}
 	}
 	return tmp;
 }
 
+int SparseMatrix::getNumOfNonZeros() {
+	int nNzero = 0;
+	for (int r = 1; r <= nRow; r++) {
+		nNzero += rows[r].size();
+	}
+	return nNzero;
+}
+
 double SparseMatrix::rowSum(int row) { // calculate the sum of elements in a "row"-th row
 	double sum = 0;
-	for (int i = 0; i < rcvs.size(); i++) {
-		if (rcvs[i].row == row)
-			sum += rcvs[i].val;
+	for (int cv = 0; cv < rows[row].size(); cv++) {
+		sum += rows[row][cv].second;
 	}
 	return sum;
 }
 double SparseMatrix::colSum(int col) { // calculate the sum of elements in a "col"-th column
 	double sum = 0;
-	for (int i = 0; i < rcvs.size(); i++) {
-		if (rcvs[i].col == col)
-			sum += rcvs[i].val;
+	for (int r = 1; r <= nRow; r++) {
+		for (int cv = 0; cv < rows[r].size(); cv++) {
+			if (rows[r][cv].first == col)
+				sum += rows[r][cv].second;
+		}
 	}
 	return sum;
 }
 double SparseMatrix::sum() { // calculate the sum of all elements
 	double sum = 0;
-	for (int i = 0; i < rcvs.size(); i++) {
-		sum += rcvs[i].val;
+	for (int r = 1; r <= nRow; r++) {
+		for (int cv = 0; cv < rows[r].size(); cv++) {
+			sum += rows[r][cv].second;
+		}
 	}
 	return sum;
 }
 bool SparseMatrix::isAllAbsLessThan(double val) {
-	for (int i = 0; i < rcvs.size(); i++) {
-		if (rcvs[i].val > val) return false;
+	for (int r = 1; r <= nRow; r++) {
+		for (int cv = 0; cv < rows[r].size(); cv++) {
+			if (rows[r][cv].second > val) return false;
+		}
 	}
 	return true;
 }
 
 void SparseMatrix::print() {
 #ifdef DEBUG
-	cout << "row:[";
-	for (int i = 0; i < rcvs.size(); i++) {
-		cout << rcvs[i].row << " ";
+	cout << "  nRow: " << nRow << " nCol: " << nCol << endl;
+	for (int i = 1; i <= rows.size(); i++) {
+		int size = rows[i].size();
+		if (size > 0) cout << "rows: " << i;
+		for (int j = 0; j < size; j++) {
+			cout << " (col: " << rows[i][j].first
+				 << " val: " << rows[i][j].second << ")";
+		}
+		cout << endl;
 	}
-	cout << "] col:[";
-	for (int i = 0; i < rcvs.size(); i++) {
-		cout << rcvs[i].col << " ";
-	}
-	cout << "] val:[";
-	for (int i = 0; i < rcvs.size(); i++) {
-		cout << rcvs[i].val << " ";
-	}
-
-	cout << "]" << endl;
-
-	for (int i = 0; i < IA.size(); i++) {
-		cout << IA[i] << " ";
-	}
-	cout << "  row : " << nRow << " col : " << nCol << endl;
 #endif
 }

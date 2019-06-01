@@ -22,6 +22,7 @@ void test1()
 	A.print();
 	
 	cout << "\tAssignment: ";
+	//cout << A.getValue(1,3) << A.getValue(5,2) << A.getValue(1,1) << A.getNumOfNonZeros()<<endl;
 	if( A.getValue(1,3)==2 && A.getValue(5,2)==3 && A.getValue(1,1)==0 && A.getNumOfNonZeros()==3 ) cout << "pass" << endl;
 	else cout << "fail" << endl;
 	A.resize(3,3);
