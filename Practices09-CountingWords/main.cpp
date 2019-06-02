@@ -20,7 +20,7 @@ struct ThreadItem {
 };
 
 void* ThreadFunction(map<string, int> *word_cnt, int from, int to, mutex *mtx) {
-	if(mtx) mtx->lock();
+	lock_guard<mutex> lck(*mtx);
 	for(auto iterw = words.begin() + from ; iterw != words.begin() + to; ++iterw){
 		//if(mtx) mtx->lock();
 		auto iwc = word_cnt->find(*iterw);
@@ -33,7 +33,6 @@ void* ThreadFunction(map<string, int> *word_cnt, int from, int to, mutex *mtx) {
 			iwc->second += 1;
 		}
 	}
-	if(mtx) mtx->unlock();
 }
 
 bool read_a_word(ifstream& in, string& w){

@@ -10,16 +10,18 @@
         {
             "type": "shell",
             "label": "powershell g++.exe build active file",
-            "command": "C:\\MinGW\\bin\\g++",
+            "command": "C:/'Program Files (x86)'/Dev-Cpp/MinGW64/bin/g++",
             "args": [
                 "-g",
                 "-o",
                 "${fileDirname}\\${workspaceFolderBasename}.exe",
-                "${fileDirname}\\*.cpp",
-                "-std=c++11"
+                "${fileDirname}\\main.cpp",
+                "${fileDirname}\\SparseMatrix.cpp",
+                "-std=c++11",
+                "-lpthread"
             ],
             "options": {
-                "cwd": "C:\\MinGW\\bin",
+                "cwd": "C:\\'Program Files (x86)'\\Dev-Cpp\\MinGW64\\bin",
                 "shell": {
                     "executable": "powershell.exe"
                 }

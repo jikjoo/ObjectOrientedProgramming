@@ -79,16 +79,40 @@ SparseMatrix SparseMatrix::operator-(SparseMatrix &M) {
 
 SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
 	SparseMatrix tmp(nRow, nCol);
+	struct ThreadItem{
+		thread worker;
+		vector_rows rows_part;
+	};	
+	vector<ThreadItem> threadlist;
+	mutex mtx;
+	core = thread::hardware_concurrency();
+	threadlist.resize(core);
 	if (nRow != M.nRow || nCol != M.nCol) return tmp;
 	tmp.rows = rows;
-	for (int rb = 1; rb <= M.nRow; rb++) {
-		for (auto &cvb : M.rows[rb]) {
-			int col_b = cvb.first;
-			double val_b = cvb.second;
-			tmp.getSetValue(rb, col_b, val_b, isPlus);
-		}
+	for(int i=0; i<core; i++){
+		int from = i * tmp.rows.size() / core;
+		int to = (i == core - 1) ? tmp.rows.size() : (i+1) * tmp.rows.size() /core;
+		copy( M.rows.begin() + from, M.rows.begin() + to, threadlist[i].rows_part );
+		threadlist[i].worker = thread(&SparseMatrix::plus_minus_part, &threadlist[i].rows_part, &tmp, isPlus, from, &mtx );
+	}
+	for(int i=0; i<core; i++){
+		threadlist[i].worker.join();
 	}
 	return tmp;
+}
+
+void SparseMatrix::plus_minus_part(vector_rows *rows_part, SparseMatrix *tmp, bool isPlus, int from, mutex *mtx){
+	lock_guard<mutex> lck(*mtx);
+	int row_b = from;
+	for (auto &rb : *rows_part) {
+		for (auto &cvb : rb) {
+			int col_b = cvb.first;
+			double val_b = cvb.second;
+			tmp->getSetValue(row_b, col_b, val_b, isPlus);
+		}
+		row_b++;
+	}
+	return;
 }
 
 SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
