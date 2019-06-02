@@ -3,28 +3,30 @@
 void SparseMatrix::setValue(int row, int col, double val) {
 	if (val == 0 || row > nRow) return;
 	rows[row].push_back(pair_cv(col, val));
-	nNzero++;
 	return;
 }
 
 double SparseMatrix::getValue(int row, int col) {
-	int size = rows[row].size();
-	for (int i = 0; i <= size; i++) {
-		if (rows[row][i].first == col)
-			return rows[row][i].second;
+	auto &rrows = rows[row];
+	int size = rrows.size();
+	for (auto &cv : rrows) {
+		if (cv.first == col)
+			return cv.second;
 	}
 	return 0;
 }
 
 void SparseMatrix::getSetValue(int row, int col, double val, bool isPlus) {
 	bool dupl = false;
-	for (int cv = 0; cv < rows[row].size(); cv++) {
-		if (rows[row][cv].first == col) {
+	auto &rrows = rows[row];
+	for (auto &cv : rrows) {
+		if (cv.first == col) {
 			dupl = true;
-			double &mval = rows[row][cv].second;
+			double &mval = cv.second;
 			val = isPlus ? mval + val : mval - val;
 			if (val == 0) {
-				rows[row].erase(rows[row].begin() + cv);
+				int idx = &cv - &rrows[0];
+				rrows.erase(rrows.begin() + idx);
 				return;
 			};
 			mval = val;
@@ -80,9 +82,9 @@ SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
 	if (nRow != M.nRow || nCol != M.nCol) return tmp;
 	tmp.rows = rows;
 	for (int rb = 1; rb <= M.nRow; rb++) {
-		for (int cvb = 0; cvb < M.rows[rb].size(); cvb++) {
-			int col_b = M.rows[rb][cvb].first;
-			double val_b = M.rows[rb][cvb].second;
+		for (auto &cvb : M.rows[rb]) {
+			int col_b = cvb.first;
+			double val_b = cvb.second;
 			tmp.getSetValue(rb, col_b, val_b, isPlus);
 		}
 	}
@@ -93,12 +95,12 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	SparseMatrix tmp(nRow, M.nCol);
 	if (nCol != M.nRow) return tmp;
 	for (int ra = 1; ra <= nRow; ra++) {
-		for (int cva = 0; cva < rows[ra].size(); cva++) {
-			uint32_t col_a = rows[ra][cva].first;
-			double val_a = rows[ra][cva].second;
-			for (int cvb = 0; cvb < M.rows[col_a].size(); cvb++) {
-				uint32_t col_b = M.rows[col_a][cvb].first;
-				double val_b = M.rows[col_a][cvb].second;
+		for (auto &cva : rows[ra]) {
+			uint32_t col_a = cva.first;
+			double val_a = cva.second;
+			for (auto &cvb : M.rows[col_a]) {
+				uint32_t col_b = cvb.first;
+				double val_b = cvb.second;
 				double new_val = val_a * val_b;
 				tmp.getSetValue(ra, col_b, new_val, 0);
 			}
@@ -114,8 +116,8 @@ bool SparseMatrix::operator==(SparseMatrix &M) {
 		return false;
 	}
 	for (int r = 1; r <= nRow; r++) {
-		for (int cv = 0; cv < rows[r].size(); cv++) {
-			if (rows[r][cv].second != M.rows[r][cv].second)
+		for (auto &cv : rows[r]) {
+			if (cv.second != cv.second)
 				return false;
 		}
 	}
@@ -125,8 +127,8 @@ bool SparseMatrix::operator==(SparseMatrix &M) {
 SparseMatrix SparseMatrix::operator-() {
 	SparseMatrix tmp = *this;
 	for (int r = 1; r <= nRow; r++) {
-		for (int cv = 0; cv < rows[r].size(); cv++) {
-			rows[r][cv].second = -rows[r][cv].second;
+		for (auto &cv : rows[r]) {
+			cv.second = -cv.second;
 		}
 	}
 	return tmp;
@@ -142,17 +144,17 @@ int SparseMatrix::getNumOfNonZeros() {
 
 double SparseMatrix::rowSum(int row) { // calculate the sum of elements in a "row"-th row
 	double sum = 0;
-	for (int cv = 0; cv < rows[row].size(); cv++) {
-		sum += rows[row][cv].second;
+	for (auto &cv : rows[row]) {
+		sum += cv.second;
 	}
 	return sum;
 }
 double SparseMatrix::colSum(int col) { // calculate the sum of elements in a "col"-th column
 	double sum = 0;
 	for (int r = 1; r <= nRow; r++) {
-		for (int cv = 0; cv < rows[r].size(); cv++) {
-			if (rows[r][cv].first == col)
-				sum += rows[r][cv].second;
+		for (auto &cv : rows[r]) {
+			if (cv.first == col)
+				sum += cv.second;
 		}
 	}
 	return sum;
@@ -160,16 +162,16 @@ double SparseMatrix::colSum(int col) { // calculate the sum of elements in a "co
 double SparseMatrix::sum() { // calculate the sum of all elements
 	double sum = 0;
 	for (int r = 1; r <= nRow; r++) {
-		for (int cv = 0; cv < rows[r].size(); cv++) {
-			sum += rows[r][cv].second;
+		for (auto &cv : rows[r]) {
+			sum += cv.second;
 		}
 	}
 	return sum;
 }
 bool SparseMatrix::isAllAbsLessThan(double val) {
 	for (int r = 1; r <= nRow; r++) {
-		for (int cv = 0; cv < rows[r].size(); cv++) {
-			if (rows[r][cv].second > val) return false;
+		for (auto &cv : rows[r]) {
+			if (cv.second > val) return false;
 		}
 	}
 	return true;
@@ -178,12 +180,12 @@ bool SparseMatrix::isAllAbsLessThan(double val) {
 void SparseMatrix::print() {
 #ifdef DEBUG
 	cout << "  nRow: " << nRow << " nCol: " << nCol << endl;
-	for (int i = 1; i <= rows.size(); i++) {
-		int size = rows[i].size();
-		if (size > 0) cout << "rows: " << i;
-		for (int j = 0; j < size; j++) {
-			cout << " (col: " << rows[i][j].first
-				 << " val: " << rows[i][j].second << ")";
+	for (int r = 1; r <= rows.size(); r++) {
+		int size = rows[r].size();
+		if (size > 0) cout << "rows: " << r;
+		for (auto &cv : rows[r]) {
+			cout << " (col: " << cv.first
+				 << " val: " << cv.second << ")";
 		}
 		cout << endl;
 	}
