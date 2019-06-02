@@ -36,6 +36,6 @@
 *.dev
 *.layout
 
-*/ipch/*
+**/ipch/**
 *.txt
 *.hwp
