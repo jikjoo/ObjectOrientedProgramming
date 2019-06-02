@@ -16,12 +16,15 @@ public:
 	SparseMatrix(int nr = 1, int nc = 1) {
 		this->nRow = nr;
 		this->nCol = nc;
-		rows = vector<vector<pair_cv>>(nr+1,vector<pair_cv>());
+		rows = vector_rows(nr+1,vector<pair_cv>());
 	}
 	~SparseMatrix() {
 		rows.clear();
 	}
 
+	typedef pair<int, double> pair_cv;
+	typedef vector<vector<pair_cv>> vector_rows;
+	vector<vector<pair_cv>> rows;
 	// resize the matrix to nr x nc.
 	// if increased, the added parts are filled with zeros
 	void resize(int nr, int nc);
@@ -38,7 +41,7 @@ public:
 	void setValue(int row, int col, double val);			  // write val at (i,j)
 	double getValue(int row, int col);						  // read value of (i,j)
 	void getSetValue(int row, int col, double val, bool isPlus); // set val at (i,j) with function
-	void sort();
+
 	// operations
 	SparseMatrix operator+(SparseMatrix &M); // matrix addition
 	SparseMatrix operator-(SparseMatrix &M); // matrix subtraction
@@ -55,13 +58,10 @@ public:
 	//print
 	void print();
 
-	typedef pair<int, double> pair_cv;
-	vector<vector<pair_cv>> rows;
 
 private:
 	// declare whatever you want
 	int nRow, nCol, nNzero;
-	void setVal(uint32_t row, uint32_t col, double val); // setValues without sortbool
 };
 
 #endif
