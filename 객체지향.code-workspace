@@ -33,12 +33,24 @@
 			"type_traits": "cpp",
 			"typeinfo": "cpp",
 			"iomanip": "cpp",
-			"vector": "cpp",
-			"fstream": "cpp",
-			"deque": "cpp",
 			"array": "cpp",
+			"deque": "cpp",
 			"list": "cpp",
-			"unordered_map": "cpp"
+			"unordered_map": "cpp",
+			"vector": "cpp",
+			"chrono": "cpp",
+			"condition_variable": "cpp",
+			"cstring": "cpp",
+			"ctime": "cpp",
+			"fstream": "cpp",
+			"functional": "cpp",
+			"memory": "cpp",
+			"mutex": "cpp",
+			"ratio": "cpp",
+			"sstream": "cpp",
+			"thread": "cpp",
+			"tuple": "cpp",
+			"utility": "cpp"
 		}
 	}
 }
