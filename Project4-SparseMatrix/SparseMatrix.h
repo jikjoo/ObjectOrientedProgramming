@@ -19,7 +19,10 @@ public:
 		rows = vector_rows(nr+1,vector<pair_cv>());
 	}
 	~SparseMatrix() {
-		rows.clear();
+		for(auto &rrows : rows){
+			rrows.shrink_to_fit();
+		}
+		rows.shrink_to_fit();
 	}
 
 	typedef pair<int, double> pair_cv;

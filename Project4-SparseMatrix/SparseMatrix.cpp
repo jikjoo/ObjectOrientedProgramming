@@ -30,6 +30,7 @@ void SparseMatrix::getSetValue(int row, int col, double val, bool isPlus) {
 				return;
 			};
 			mval = val;
+			return;
 		}
 	}
 	if (!dupl) setValue(row, col, val);
@@ -96,13 +97,13 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	if (nCol != M.nRow) return tmp;
 	for (int ra = 1; ra <= nRow; ra++) {
 		for (auto &cva : rows[ra]) {
-			uint32_t col_a = cva.first;
+			int col_a = cva.first;
 			double val_a = cva.second;
 			for (auto &cvb : M.rows[col_a]) {
-				uint32_t col_b = cvb.first;
+				int col_b = cvb.first;
 				double val_b = cvb.second;
 				double new_val = val_a * val_b;
-				tmp.getSetValue(ra, col_b, new_val, 0);
+				tmp.getSetValue(ra, col_b, new_val, true);
 			}
 		}
 	}
@@ -171,7 +172,10 @@ double SparseMatrix::sum() { // calculate the sum of all elements
 bool SparseMatrix::isAllAbsLessThan(double val) {
 	for (int r = 1; r <= nRow; r++) {
 		for (auto &cv : rows[r]) {
-			if (cv.second > val) return false;
+			if (cv.second > val) {
+				cout << "false at (" << r << "," << cv.first << "," <<cv.second << ")" << endl;	
+				return false;
+			}
 		}
 	}
 	return true;
