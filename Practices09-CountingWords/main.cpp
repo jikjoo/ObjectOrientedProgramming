@@ -87,7 +87,7 @@ int main() {
 	);
 	int i=0;
 	for(auto &wc : word_sortedByValue) {
-		//if(i == 10) break;
+		if(i == 10) break;
 		i++;
 		cout << wc.first << ":	 " << wc.second <<endl;
 	}
@@ -96,5 +96,5 @@ int main() {
 		if( iter->second > 1) break;
 		else onlyone++;
 	}
-	cout << onlyone << endl;
+	cout <<"only once :"<< onlyone << endl;
 }
