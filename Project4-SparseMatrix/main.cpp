@@ -66,7 +66,6 @@ void test3()
 	B.readFromFile("data3_2.txt"); B.resize(N,N);
 	C.readFromFile("data3_3.txt"); C.resize(N,N);
 	D.readFromFile("data3_4.txt"); D.resize(N,N);
-
 	X = A+B;
 	cout << "\tAddition: ";
 	if( X.getNumRows()==N && X.getNumCols()==N && Agree(X,C) ) cout << "pass" << endl;
@@ -96,11 +95,10 @@ void test4()
 	cout << "(reference time = " << rtime << ")" << endl;
 	
 	// read input files
-	A.readFromFile("data4_1.txt"); A.resize(N,N);
+	//A.readFromFile("data4_1.txt"); A.resize(N,N);
 	B.readFromFile("data4_2.txt"); B.resize(N,N);
 	C.readFromFile("data4_3.txt"); C.resize(N,N);
 	D.readFromFile("data4_4.txt"); D.resize(N,N);
-
 	// sum
 	t1 = clock(); s = A.sum() + B.sum(); t2 = clock();
 	elapse = (double)(t2-t1)/CLOCKS_PER_SEC;
@@ -135,7 +133,7 @@ int main(int argc, char* argv[])
 {
 	test1();
 	test2();
-	test3();
+	//test3();
 	test4();
 			
 	return 0;

@@ -2,12 +2,12 @@
 
 void SparseMatrix::setValue(int row, int col, double val) {
 	if (val == 0 || row > nRow) return;
-	rows[row].emplace_back(col,val);
+	rows[row].emplace_back(col, val);
 	return;
 }
 
 double SparseMatrix::getValue(int row, int col) {
-	for(auto &cv : rows[row]){
+	for (auto &cv : rows[row]) {
 		if (cv.first == col) return cv.second;
 	}
 	return 0;
