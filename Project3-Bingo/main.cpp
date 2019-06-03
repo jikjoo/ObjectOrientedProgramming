@@ -15,6 +15,7 @@
 #include "Bingo_2014170935_0.h"
 #include "Bingo_2014170935_1.h"
 #include "Bingo_2014170935_2.h"
+#include "Bingo_2014170935_4.h"
 
 map<string, int> SCORE;
 
@@ -32,10 +33,11 @@ int main(int argc, char *argv[]) {
 	Players[NumPlayers++] = new Bingo_ColinSeok;
 
 	// add your player here by changing "20160000" to your student id
-	//	Players[NumPlayers++] = new Bingo_2014170935;
+		Players[NumPlayers++] = new Bingo_2014170935;
 	Players[NumPlayers++] = new Bingo_2014170935_0;
 	Players[NumPlayers++] = new Bingo_2014170935_1;
 	Players[NumPlayers++] = new Bingo_2014170935_2;
+	Players[NumPlayers++] = new Bingo_2014170935_4;
 
 	// initialize score
 	for (int i = 0; i < NumPlayers; i++)
