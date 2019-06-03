@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
@@ -16,18 +17,16 @@ public:
 	SparseMatrix(int nr = 1, int nc = 1) {
 		this->nRow = nr;
 		this->nCol = nc;
-		rows = vector_rows(nr+1,vector<pair_cv>());
+		rows = vector_rows(nr+1,map_cv());
 	}
 	~SparseMatrix() {
-		for(auto &rrows : rows){
-			rrows.shrink_to_fit();
-		}
 		rows.shrink_to_fit();
 	}
 
 	typedef pair<int, double> pair_cv;
-	typedef vector<vector<pair_cv>> vector_rows;
-	vector<vector<pair_cv>> rows;
+	typedef unordered_map<int, double> map_cv;
+	typedef vector<map_cv> vector_rows;
+	vector_rows rows;
 	// resize the matrix to nr x nc.
 	// if increased, the added parts are filled with zeros
 	void resize(int nr, int nc);
@@ -64,7 +63,7 @@ public:
 
 private:
 	// declare whatever you want
-	int nRow, nCol, nNzero;
+	int nRow, nCol;
 };
 
 #endif

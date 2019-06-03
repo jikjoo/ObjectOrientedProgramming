@@ -2,31 +2,26 @@
 
 void SparseMatrix::setValue(int row, int col, double val) {
 	if (val == 0 || row > nRow) return;
-	rows[row].push_back(pair_cv(col, val));
+	rows[row][col] = val;
 	return;
 }
 
 double SparseMatrix::getValue(int row, int col) {
-	auto &rrows = rows[row];
-	int size = rrows.size();
-	for (auto &cv : rrows) {
-		if (cv.first == col)
-			return cv.second;
-	}
+	auto cv = rows[row].find(col);
+	if (cv != rows[row].end()) return cv->second;
 	return 0;
 }
 
 void SparseMatrix::getSetValue(int row, int col, double val, bool isPlus) {
 	bool dupl = false;
 	auto &rrows = rows[row];
-	for (auto &cv : rrows) {
-		if (cv.first == col) {
+	for (auto icv = rrows.begin(); icv != rrows.end(); ++icv) {
+		if (icv->first == col) {
 			dupl = true;
-			double &mval = cv.second;
+			double &mval = icv->second;
 			val = isPlus ? mval + val : mval - val;
 			if (val == 0) {
-				int idx = &cv - &rrows[0];
-				rrows.erase(rrows.begin() + idx);
+				rrows.erase(icv);
 				return;
 			};
 			mval = val;
@@ -40,10 +35,10 @@ void SparseMatrix::getSetValue(int row, int col, double val, bool isPlus) {
 void SparseMatrix::resize(int nr, int nc) {
 	rows.resize(nr + 1);
 	if (nCol > nc) {
-		for (int i = 1; i < nr; i++) {
-			for (int j = 0; j < rows[i].size(); j++) {
-				if (rows[i].at(j).first > nc) {
-					rows[i].erase(rows[i].begin() + j);
+		for (int r = 1; r < nr; r++) {
+			for (auto icv = rows[r].begin(); icv != rows[r].end(); ++icv) {
+				if (icv->first > nc) {
+					rows[r].erase(icv);
 				}
 			}
 		}
@@ -173,7 +168,7 @@ bool SparseMatrix::isAllAbsLessThan(double val) {
 	for (int r = 1; r <= nRow; r++) {
 		for (auto &cv : rows[r]) {
 			if (cv.second > val) {
-				cout << "false at (" << r << "," << cv.first << "," <<cv.second << ")" << endl;	
+				cout << "false at (" << r << "," << cv.first << "," << cv.second << ")" << endl;
 				return false;
 			}
 		}
@@ -184,9 +179,8 @@ bool SparseMatrix::isAllAbsLessThan(double val) {
 void SparseMatrix::print() {
 #ifdef DEBUG
 	cout << "  nRow: " << nRow << " nCol: " << nCol << endl;
-	for (int r = 1; r <= rows.size(); r++) {
-		int size = rows[r].size();
-		if (size > 0) cout << "rows: " << r;
+	for (int r = 1; r <= nRow; r++) {
+		if (!rows[r].empty()) cout << "rows: " << r;
 		for (auto &cv : rows[r]) {
 			cout << " (col: " << cv.first
 				 << " val: " << cv.second << ")";
