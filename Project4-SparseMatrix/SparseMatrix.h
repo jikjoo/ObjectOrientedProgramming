@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 using namespace std;
 
@@ -17,15 +17,21 @@ public:
 	SparseMatrix(int nr = 1, int nc = 1) {
 		this->nRow = nr;
 		this->nCol = nc;
-		rows = vector_rows(nr + 1, map_cv());
+		rows = vector_rows(nr + 1);
+		for (auto &i : rows) {
+			i = new vector<pair_cv>();
+		}
 	}
 	~SparseMatrix() {
+		for (auto &i : rows) {
+			delete i;
+		}
 		rows.shrink_to_fit();
 	}
 
 	typedef pair<int, double> pair_cv;
 	typedef map<int, double> map_cv;
-	typedef vector<map<int,double>> vector_rows;
+	typedef vector<vector<pair_cv> *> vector_rows;
 	vector_rows rows;
 	// resize the matrix to nr x nc.
 	// if increased, the added parts are filled with zeros
@@ -59,13 +65,11 @@ public:
 	bool isAllAbsLessThan(double val); // true if the absolute value of all elements are less than val
 	//print
 	void print();
+	
 
 private:
 	// declare whatever you want
 	int nRow, nCol;
-	static bool comp(const pair_cv a, const pair_cv b) {
-		return a.first < b.first;
-	}
 };
 
 #endif
