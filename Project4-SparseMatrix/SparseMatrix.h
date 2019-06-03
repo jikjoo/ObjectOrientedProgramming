@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -16,30 +17,31 @@ public:
 	SparseMatrix(int nr = 1, int nc = 1) {
 		this->nRow = nr;
 		this->nCol = nc;
-		rows = vector_rows(nr+1,vector<pair_cv>());
+		rows = vector_rows(nr + 1, map_cv());
 	}
 	~SparseMatrix() {
 		rows.shrink_to_fit();
 	}
 
 	typedef pair<int, double> pair_cv;
-	typedef vector<vector<pair_cv>> vector_rows;
+	typedef map<int, double> map_cv;
+	typedef vector<map<int,double>> vector_rows;
 	vector_rows rows;
 	// resize the matrix to nr x nc.
 	// if increased, the added parts are filled with zeros
 	void resize(int nr, int nc);
 
-	int getNumRows() { return nRow; };		   // return number of rows
-	int getNumCols() { return nCol; };		   // return number of columns
-	int getNumOfNonZeros(); // return number of non-zero elements
+	int getNumRows() { return nRow; }; // return number of rows
+	int getNumCols() { return nCol; }; // return number of columns
+	int getNumOfNonZeros();			   // return number of non-zero elements
 
 	// file access
 	// read a sparse matrix from a text file
 	// the file format is "row col val"
 	bool readFromFile(string filename);
 	// data access
-	void setValue(int row, int col, double val);			  // write val at (i,j)
-	double getValue(int row, int col);						  // read value of (i,j)
+	void setValue(int row, int col, double val);				 // write val at (i,j)
+	double getValue(int row, int col);							 // read value of (i,j)
 	void getSetValue(int row, int col, double val, bool isPlus); // set val at (i,j) with function
 
 	// operations
@@ -58,10 +60,12 @@ public:
 	//print
 	void print();
 
-
 private:
 	// declare whatever you want
 	int nRow, nCol;
+	static bool comp(const pair_cv a, const pair_cv b) {
+		return a.first < b.first;
+	}
 };
 
 #endif
