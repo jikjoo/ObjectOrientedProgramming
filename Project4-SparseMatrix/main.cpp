@@ -95,7 +95,7 @@ void test4()
 	cout << "(reference time = " << rtime << ")" << endl;
 	
 	// read input files
-	//A.readFromFile("data4_1.txt"); A.resize(N,N);
+	A.readFromFile("data4_1.txt"); A.resize(N,N);
 	B.readFromFile("data4_2.txt"); B.resize(N,N);
 	C.readFromFile("data4_3.txt"); C.resize(N,N);
 	D.readFromFile("data4_4.txt"); D.resize(N,N);
@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
 {
 	test1();
 	test2();
-	//test3();
+	test3();
 	test4();
 			
 	return 0;
