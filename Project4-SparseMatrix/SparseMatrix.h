@@ -1,12 +1,13 @@
 #ifndef _SPARSE_MATRIX_H_
 #define _SPARSE_MATRIX_H_
-#define DEBUG
+//#define DEBUG
 
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
@@ -40,7 +41,6 @@ public:
 	// data access
 	void setValue(int row, int col, double val);			  // write val at (i,j)
 	double getValue(int row, int col);						  // read value of (i,j)
-	void getSetValue(int row, int col, double val, bool isPlus); // set val at (i,j) with function
 
 	// operations
 	SparseMatrix operator+(SparseMatrix &M); // matrix addition

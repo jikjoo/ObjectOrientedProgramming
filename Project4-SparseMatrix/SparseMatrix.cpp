@@ -13,26 +13,6 @@ double SparseMatrix::getValue(int row, int col) {
 	return 0;
 }
 
-void SparseMatrix::getSetValue(int row, int col, double val, bool isPlus) {
-	bool dupl = false;
-	auto &rrows = rows[row];
-	for (auto icv = rrows.begin(); icv != rrows.end(); ++icv) {
-		if (icv->first == col) {
-			dupl = true;
-			double &mval = icv->second;
-			val = isPlus ? mval + val : mval - val;
-			if (val == 0) {
-				rrows.erase(icv);
-				return;
-			};
-			mval = val;
-			return;
-		}
-	}
-	if (!dupl) setValue(row, col, val);
-	return;
-}
-
 void SparseMatrix::resize(int nr, int nc) {
 	rows.resize(nr + 1);
 	if (nCol > nc) {
@@ -77,12 +57,20 @@ SparseMatrix SparseMatrix::operator-(SparseMatrix &M) {
 SparseMatrix SparseMatrix::plus_minus(SparseMatrix &M, bool isPlus) {
 	SparseMatrix tmp(nRow, nCol);
 	if (nRow != M.nRow || nCol != M.nCol) return tmp;
-	tmp.rows = rows;
-	for (int rb = 1; rb <= M.nRow; rb++) {
-		for (auto &cvb : M.rows[rb]) {
+	for (int r = 1; r <= nRow; r++) {
+		unordered_map<int,double> tmp_cols;
+		for (auto &cva : rows[r]) {
+			int col_a = cva.first;
+			double val_a = cva.second;
+			tmp_cols[col_a] = val_a;
+		}
+		for (auto &cvb : M.rows[r]) {
 			int col_b = cvb.first;
 			double val_b = cvb.second;
-			tmp.getSetValue(rb, col_b, val_b, isPlus);
+			tmp_cols[col_b] = isPlus? tmp_cols[col_b] + val_b : tmp_cols[col_b] - val_b;
+		}
+		for(auto &tmpc : tmp_cols){
+			tmp.setValue(r,tmpc.first,tmpc.second);
 		}
 	}
 	return tmp;
@@ -92,6 +80,7 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 	SparseMatrix tmp(nRow, M.nCol);
 	if (nCol != M.nRow) return tmp;
 	for (int ra = 1; ra <= nRow; ra++) {
+		unordered_map<int,double> tmp_cols;
 		for (auto &cva : rows[ra]) {
 			int col_a = cva.first;
 			double val_a = cva.second;
@@ -99,8 +88,11 @@ SparseMatrix SparseMatrix::operator*(SparseMatrix &M) {
 				int col_b = cvb.first;
 				double val_b = cvb.second;
 				double new_val = val_a * val_b;
-				tmp.getSetValue(ra, col_b, new_val, true);
+				tmp_cols[col_b] += new_val;
 			}
+		}
+		for(auto &tmpc : tmp_cols){
+			tmp.setValue(ra,tmpc.first,tmpc.second);
 		}
 	}
 	return tmp;
